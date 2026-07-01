@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { GetRepoGroups, Search } from '../../wailsjs/go/main/App'
-import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
 import type { model } from '../../wailsjs/go/models'
 
 export type RepoGroup = model.RepoGroup
@@ -15,22 +15,20 @@ export function useSessions() {
   useEffect(() => {
     GetRepoGroups().then(setRepoGroups)
 
-    EventsOn('scan:complete', () => {
+    const offScan = EventsOn('scan:complete', () => {
       GetRepoGroups().then(setRepoGroups)
     })
-
-    EventsOn('session:updated', (session: Session) => {
+    const offUpdated = EventsOn('session:updated', (session: Session) => {
       setRepoGroups(prev => updateSessionInGroups(prev, session))
     })
-
-    EventsOn('session:new', () => {
+    const offNew = EventsOn('session:new', () => {
       GetRepoGroups().then(setRepoGroups)
     })
 
     return () => {
-      EventsOff('scan:complete')
-      EventsOff('session:updated')
-      EventsOff('session:new')
+      offScan()
+      offUpdated()
+      offNew()
     }
   }, [])
 

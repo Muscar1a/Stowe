@@ -2,6 +2,13 @@ package model
 
 import "time"
 
+type Message struct {
+	UUID      string    `json:"uuid"`
+	Role      string    `json:"role"`
+	Content   string    `json:"content"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 type Session struct {
 	ID           string    `json:"id"`
 	AgentType    string    `json:"agentType"`

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
-import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
 import { WriteToTerminal, ResizeTerminal, CloseTerminal } from '../../wailsjs/go/main/App'
 
 interface PTYData { id: string; data: string }
@@ -34,11 +34,11 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
 
     term.onData(data => WriteToTerminal(ptyID, data))
 
-    EventsOn('pty:data', (payload: PTYData) => {
+    const offData = EventsOn('pty:data', (payload: PTYData) => {
       if (payload.id === ptyID) term.write(payload.data)
     })
 
-    EventsOn('pty:exit', (payload: PTYExit) => {
+    const offExit = EventsOn('pty:exit', (payload: PTYExit) => {
       if (payload.id === ptyID) setExited(true)
     })
 
@@ -50,8 +50,8 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
     observer.observe(containerRef.current)
 
     return () => {
-      EventsOff('pty:data')
-      EventsOff('pty:exit')
+      offData()
+      offExit()
       observer.disconnect()
       CloseTerminal(ptyID)
       term.dispose()

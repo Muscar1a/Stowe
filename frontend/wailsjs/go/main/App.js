@@ -10,6 +10,10 @@ export function GetRepoGroups() {
   return window['go']['main']['App']['GetRepoGroups']();
 }
 
+export function GetSessionMessages(arg1) {
+  return window['go']['main']['App']['GetSessionMessages'](arg1);
+}
+
 export function LaunchNewChat(arg1) {
   return window['go']['main']['App']['LaunchNewChat'](arg1);
 }

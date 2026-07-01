@@ -6,6 +6,8 @@ export function CloseTerminal(arg1:string):Promise<void>;
 
 export function GetRepoGroups():Promise<Array<model.RepoGroup>>;
 
+export function GetSessionMessages(arg1:string):Promise<Array<model.Message>>;
+
 export function LaunchNewChat(arg1:string):Promise<string>;
 
 export function RenameSession(arg1:string,arg2:string):Promise<void>;

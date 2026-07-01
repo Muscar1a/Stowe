@@ -98,6 +98,9 @@ func (a *App) LaunchNewChat(gitRoot string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if gitRoot == "" {
+		gitRoot, _ = os.UserHomeDir()
+	}
 	return a.ptyMgr.Start(a.ctx, binary, []string{}, gitRoot)
 }
 
@@ -118,6 +121,15 @@ func (a *App) ResumeSession(sessionID string) (string, error) {
 	return a.ptyMgr.Start(a.ctx, binary, args, dir)
 }
 
+func (a *App) GetSessionMessages(sessionID string) []model.Message {
+	s := a.registry.GetSession(sessionID)
+	if s == nil {
+		return nil
+	}
+	msgs, _ := a.ccAdapter.ParseMessages(s.FilePath)
+	return msgs
+}
+
 func (a *App) WriteToTerminal(ptyID string, data string) {
 	a.ptyMgr.Write(ptyID, []byte(data))
 }
@@ -133,9 +145,21 @@ func (a *App) CloseTerminal(ptyID string) {
 // === Metadata methods ===
 
 func (a *App) RenameSession(sessionID, name string) error {
-	return a.registry.SetCustomName(sessionID, name)
+	if err := a.registry.SetCustomName(sessionID, name); err != nil {
+		return err
+	}
+	if s := a.registry.GetSession(sessionID); s != nil {
+		runtime.EventsEmit(a.ctx, "session:updated", s)
+	}
+	return nil
 }
 
 func (a *App) ToggleFavorite(sessionID string) error {
-	return a.registry.ToggleFavorite(sessionID)
+	if err := a.registry.ToggleFavorite(sessionID); err != nil {
+		return err
+	}
+	if s := a.registry.GetSession(sessionID); s != nil {
+		runtime.EventsEmit(a.ctx, "session:updated", s)
+	}
+	return nil
 }

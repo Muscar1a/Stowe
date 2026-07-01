@@ -1,81 +1,89 @@
 import { useState } from 'react'
 import { Sidebar } from './components/Sidebar'
-import { SessionList } from './components/SessionList'
-import { TerminalPane } from './components/TerminalPane'
+import { SessionDetail } from './components/SessionDetail'
 import { useSessions } from './hooks/useSessions'
-import { LaunchNewChat, ResumeSession } from '../wailsjs/go/main/App'
+import { LaunchNewChat, ResumeSession, CloseTerminal } from '../wailsjs/go/main/App'
 import type { Session } from './hooks/useSessions'
 
-interface ActiveTerminal {
+const CLI_AGENT_TYPES = new Set(['claude_code', 'codex', 'antigravity', 'gemini_cli'])
+
+export interface TabEntry {
   ptyID: string
+  sessionID: string | null
   title: string
 }
 
 export default function App() {
-  const { repoGroups, sessions, selectedGitRoot, setSelectedGitRoot, searchQuery, setSearchQuery, isSearching } = useSessions()
-  const [terminal, setTerminal] = useState<ActiveTerminal | null>(null)
+  const { repoGroups, sessions, searchQuery, setSearchQuery } = useSessions()
+  const [tabs, setTabs] = useState<TabEntry[]>([])
+  const [activeTabPtyId, setActiveTabPtyId] = useState<string | null>(null)
 
-  async function handleOpenSession(session: Session) {
+  const activeTab = tabs.find(t => t.ptyID === activeTabPtyId) ?? null
+  const activeSession = activeTab?.sessionID
+    ? sessions.find(s => s.id === activeTab.sessionID) ?? null
+    : null
+
+  async function handleSelectSession(session: Session) {
+    if (!CLI_AGENT_TYPES.has(session.agentType?.toLowerCase() ?? '')) return
+
+    // Already open — just focus its tab
+    const existing = tabs.find(t => t.sessionID === session.id)
+    if (existing) {
+      setActiveTabPtyId(existing.ptyID)
+      return
+    }
+
     const ptyID = await ResumeSession(session.id)
-    setTerminal({
+    const newTab: TabEntry = {
       ptyID,
+      sessionID: session.id,
       title: session.customName || session.title || 'Session',
-    })
+    }
+    setTabs(prev => [...prev, newTab])
+    setActiveTabPtyId(ptyID)
   }
 
   async function handleNewChat() {
-    const cwd = selectedGitRoot ?? ''
-    const ptyID = await LaunchNewChat(cwd)
-    setTerminal({ ptyID, title: 'New chat' })
+    const gitRoot = activeSession?.gitRoot ?? ''
+    const ptyID = await LaunchNewChat(gitRoot)
+    const newTab: TabEntry = { ptyID, sessionID: null, title: 'New chat' }
+    setTabs(prev => [...prev, newTab])
+    setActiveTabPtyId(ptyID)
   }
 
-  function handleCloseTerminal() {
-    setTerminal(null)
+  function handleCloseTab(ptyID: string) {
+    CloseTerminal(ptyID)
+    setTabs(prev => {
+      const idx = prev.findIndex(t => t.ptyID === ptyID)
+      const next = prev.filter(t => t.ptyID !== ptyID)
+      if (activeTabPtyId === ptyID) {
+        const nextActive = next[idx] ?? next[idx - 1] ?? null
+        setActiveTabPtyId(nextActive?.ptyID ?? null)
+      }
+      return next
+    })
   }
 
   return (
-    <div className="flex h-screen bg-[#0d1117] text-white overflow-hidden">
+    <div className="flex h-screen bg-[#090b10] text-white overflow-hidden font-sans">
       <Sidebar
         repoGroups={repoGroups}
-        selectedGitRoot={selectedGitRoot}
-        onSelect={setSelectedGitRoot}
+        sessions={sessions}
+        selectedSession={activeSession}
+        onSelectSession={handleSelectSession}
         searchQuery={searchQuery}
         onSearch={setSearchQuery}
         onNewChat={handleNewChat}
+        activeTerminalCount={tabs.length}
       />
-
-      {/* Session list */}
-      <div className={`flex flex-col overflow-hidden transition-all duration-200 ${terminal ? 'w-72 shrink-0' : 'flex-1'}`}>
-        <div className="flex items-center px-4 py-3 border-b border-white/[0.08] shrink-0">
-          <h2 className="text-sm font-medium text-white/70">
-            {isSearching
-              ? `Results for "${searchQuery}"`
-              : selectedGitRoot
-              ? repoGroups.find(g => g.gitRoot === selectedGitRoot)?.displayName ?? 'Sessions'
-              : 'All sessions'}
-          </h2>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <SessionList
-            sessions={sessions}
-            repoGroups={repoGroups}
-            selectedGitRoot={selectedGitRoot}
-            isSearching={isSearching}
-            onOpen={handleOpenSession}
-          />
-        </div>
-      </div>
-
-      {/* Terminal pane */}
-      {terminal && (
-        <div className="flex-1 border-l border-white/[0.08]">
-          <TerminalPane
-            ptyID={terminal.ptyID}
-            title={terminal.title}
-            onClose={handleCloseTerminal}
-          />
-        </div>
-      )}
+      <SessionDetail
+        session={activeSession}
+        repoGroups={repoGroups}
+        tabs={tabs}
+        activeTabPtyId={activeTabPtyId}
+        onSelectTab={setActiveTabPtyId}
+        onCloseTab={handleCloseTab}
+      />
     </div>
   )
 }
