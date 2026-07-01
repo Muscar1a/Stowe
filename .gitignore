@@ -1,2 +1,37 @@
+# AI & Agent files
 CLAUDE.md
+.claude/
+.gemini/
+*.log
+
+# Frontend (Node / Vite)
+node_modules/
 frontend/node_modules/
+frontend/dist/
+dist/
+*.local
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Go & Wails build artifacts
+build/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# OS & Editor / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
