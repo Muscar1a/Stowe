@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
-import { WriteToTerminal, ResizeTerminal, CloseTerminal } from '../../wailsjs/go/main/App'
+import { WriteToTerminal, ResizeTerminal } from '../../wailsjs/go/main/App'
 
 interface PTYData { id: string; data: string }
 interface PTYExit { id: string; code: number }
@@ -53,7 +53,6 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
       offData()
       offExit()
       observer.disconnect()
-      CloseTerminal(ptyID)
       term.dispose()
       termRef.current = null
       fitRef.current = null
