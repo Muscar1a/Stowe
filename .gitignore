@@ -1,5 +1,7 @@
 # AI & Agent files
 CLAUDE.md
+claude-process.md
+session-handoff.md
 .claude/
 .gemini/
 *.log
