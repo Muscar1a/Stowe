@@ -19,17 +19,7 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, onSel
   const inputRef = useRef<HTMLInputElement>(null)
 
   if (tabs.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#090b10] text-white/40 p-8 select-none">
-        <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-2xl mb-4">
-          &gt;_
-        </div>
-        <h3 className="text-base font-semibold text-white/80 mb-1">No session open</h3>
-        <p className="text-xs text-white/40 max-w-sm text-center">
-          Choose a session from the sidebar or click <span className="text-blue-400 font-medium">+ New Session</span>.
-        </p>
-      </div>
-    )
+    return <WelcomePage />
   }
 
   const repoGroup = session ? repoGroups.find(g => g.gitRoot === session.gitRoot) : null
@@ -152,6 +142,54 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, onSel
         ))}
       </div>
 
+    </div>
+  )
+}
+
+function WelcomePage() {
+  const services = [
+    { name: 'Claude', color: 'from-orange-500/20 to-amber-500/20', border: 'border-orange-500/20', dot: 'bg-orange-400', tokens: null },
+    { name: 'Codex', color: 'from-green-500/20 to-emerald-500/20', border: 'border-green-500/20', dot: 'bg-green-400', tokens: null },
+    { name: 'Gemini', color: 'from-blue-500/20 to-cyan-500/20', border: 'border-blue-500/20', dot: 'bg-blue-400', tokens: null },
+  ]
+
+  return (
+    <div className="flex-1 flex flex-col bg-[#090b10] select-none overflow-auto">
+      {/* Hero */}
+      <div className="flex flex-col items-center justify-center flex-1 px-12 py-16 min-h-[360px]">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-400 flex items-center justify-center text-2xl font-black text-white shadow-lg mb-6">
+          S
+        </div>
+        <h1 className="text-2xl font-bold text-white/90 mb-2 tracking-tight">Welcome to Stowe</h1>
+        <p className="text-sm text-white/40 text-center max-w-xs leading-relaxed">
+          Your AI session manager. Open a conversation from the sidebar or start a new session.
+        </p>
+      </div>
+
+      {/* Token usage section — placeholder */}
+      <div className="px-10 pb-12">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Token Usage</span>
+          <div className="flex-1 h-px bg-white/[0.05]" />
+          <span className="text-[10px] text-white/20">Coming soon</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {services.map(s => (
+            <div
+              key={s.name}
+              className={`rounded-xl border ${s.border} bg-gradient-to-br ${s.color} p-4`}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`w-2 h-2 rounded-full ${s.dot} opacity-60`} />
+                <span className="text-xs font-semibold text-white/60">{s.name}</span>
+              </div>
+              <p className="text-xl font-bold text-white/20">—</p>
+              <p className="text-[10px] text-white/20 mt-1">tokens used</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

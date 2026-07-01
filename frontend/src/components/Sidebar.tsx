@@ -10,7 +10,6 @@ interface Props {
   searchQuery: string
   onSearch: (q: string) => void
   onNewChat: () => void
-  activeTerminalCount: number
 }
 
 export function Sidebar({
@@ -21,9 +20,8 @@ export function Sidebar({
   searchQuery,
   onSearch,
   onNewChat,
-  activeTerminalCount,
 }: Props) {
-  const [viewMode, setViewMode] = useState<'history' | 'favorites' | 'active'>('history')
+  const [viewMode, setViewMode] = useState<'history' | 'favorites' | 'all'>('history')
   const [collapsedRepos, setCollapsedRepos] = useState<Record<string, boolean>>({})
 
   function toggleRepo(gitRoot: string) {
@@ -37,6 +35,8 @@ export function Sidebar({
     if (viewMode === 'favorites') return s.isFavorite
     return true
   })
+
+  const allSessions = repoGroups.flatMap(g => g.sessions)
 
   return (
     <div className="flex flex-col h-full w-80 shrink-0 bg-[#0c0e14] border-r border-white/[0.06] select-none text-white/80">
@@ -75,32 +75,24 @@ export function Sidebar({
 
         <button
           onClick={() => setViewMode('favorites')}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
             viewMode === 'favorites' ? 'bg-white/[0.06] text-white font-medium' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.03]'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-base leading-none opacity-80 text-yellow-400/90">☆</span>
-            <span>Favorites</span>
-          </div>
+          <span className="text-base leading-none opacity-80 text-yellow-400/90">☆</span>
+          <span>Favorites</span>
         </button>
 
         <button
-          onClick={() => setViewMode('active')}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-            viewMode === 'active' ? 'bg-white/[0.06] text-white font-medium' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.03]'
+          onClick={() => setViewMode('all')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+            viewMode === 'all' ? 'bg-white/[0.06] text-white font-medium' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.03]'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-xs font-bold px-1 py-0.5 bg-white/10 rounded text-blue-400">&gt;_</span>
-            <span>Active Terminals</span>
-          </div>
-          {activeTerminalCount > 0 && (
-            <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-sm">
-              {activeTerminalCount}
-            </span>
-          )}
+          <span className="text-base leading-none opacity-80">☰</span>
+          <span>Conversation History</span>
         </button>
+
       </div>
 
       {/* Search Input */}
@@ -127,10 +119,30 @@ export function Sidebar({
 
       {/* Repositories Tree / Session List */}
       <div className="flex-1 overflow-y-auto px-2 py-2 space-y-3">
-        {isFiltering ? (
+        {viewMode === 'all' && !searchQuery ? (
           <div>
             <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-2 mb-1.5">
-              {searchQuery ? `Search Results (${filteredSessions.length})` : viewMode === 'favorites' ? 'Favorite Sessions' : 'Sessions'}
+              ALL CONVERSATIONS ({allSessions.length})
+            </p>
+            {allSessions.length === 0 ? (
+              <p className="text-xs text-white/30 px-3 py-4 text-center">No conversations found</p>
+            ) : (
+              <div className="space-y-0.5">
+                {allSessions.map(s => (
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    isSelected={selectedSession?.id === s.id}
+                    onOpen={onSelectSession}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : isFiltering ? (
+          <div>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-2 mb-1.5">
+              {searchQuery ? `Search Results (${filteredSessions.length})` : 'Favorite Sessions'}
             </p>
             {filteredSessions.length === 0 ? (
               <p className="text-xs text-white/30 px-3 py-4 text-center">No matching sessions found</p>

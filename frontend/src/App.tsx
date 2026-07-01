@@ -88,7 +88,6 @@ export default function App() {
         searchQuery={searchQuery}
         onSearch={setSearchQuery}
         onNewChat={handleNewChat}
-        activeTerminalCount={tabs.length}
       />
       <SessionDetail
         session={activeSession}
