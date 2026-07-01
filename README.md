@@ -23,6 +23,29 @@ Built on Go + Wails, Stowe uses the native system webview to run fast and consum
 
 ---
 
+## 📂 Project Structure
+
+```text
+stowe/
+├── main.go               # Go entry point (Wails launcher)
+├── app.go                # Wails App definition & event/action bindings (Go ↔ JS)
+├── internal/             # Go Backend source code
+│   ├── model/            # Data models (Session, RepoGroup)
+│   ├── adapter/          # Unified adapter interfaces and parsers (e.g., Claude Code)
+│   ├── db/               # SQLite database client, WAL configurations, FTS5 & triggers
+│   ├── git/              # Git repository resolution utilities
+│   ├── registry/         # Log scanner registry and SQLite cache coordinator
+│   ├── watcher/          # fsnotify wrapper monitoring session logs
+│   └── pty/              # PTY manager supporting Windows (ConPTY) & Unix (creack/pty)
+└── frontend/             # Frontend React app (Vite + TS + Tailwind v4)
+    └── src/
+        ├── App.tsx       # Main layout and tab state manager
+        ├── components/   # UI Components (Sidebar, SessionCard, TerminalPane, etc.)
+        └── hooks/        # React hooks for PTY data piping and session updates
+```
+
+---
+
 ## 🚦 Getting Started
 
 ### Prerequisites
