@@ -4,6 +4,8 @@ claude-process.md
 session-handoff.md
 .claude/
 .gemini/
+.agents/
+skills-lock.json
 *.log
 
 # Frontend (Node / Vite)
@@ -21,6 +23,8 @@ pnpm-debug.log*
 
 # Go & Wails build artifacts
 build/bin/
+frontend/wailsjs/
+frontend/package.json.md5
 *.exe
 *.exe~
 *.dll

@@ -14,7 +14,7 @@ export function TerminalPane({ ptyID, title, onClose, hideHeader }: Props) {
   const { exited } = useTerminal(containerRef, ptyID)
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1117] w-full">
+    <div className="flex flex-col h-full bg-bg-terminal w-full">
       {/* Terminal title bar */}
       {!hideHeader && (
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.08] shrink-0">

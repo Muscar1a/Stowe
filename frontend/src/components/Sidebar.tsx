@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { RepoGroup, Session } from '../hooks/useSessions'
+import type { AppMode } from '../App'
 import { SessionCard } from './SessionCard'
+import { useTheme, THEMES } from '../theme'
 
 interface Props {
   repoGroups: RepoGroup[]
@@ -10,7 +12,12 @@ interface Props {
   searchQuery: string
   onSearch: (q: string) => void
   onNewChat: () => void
+  mode: AppMode
+  onSelectMode: (mode: AppMode) => void
 }
+
+// Feature flag: API Chat is not ready yet — hide its entry points in the UI.
+const SHOW_API_CHAT = false
 
 export function Sidebar({
   repoGroups,
@@ -20,12 +27,25 @@ export function Sidebar({
   searchQuery,
   onSearch,
   onNewChat,
+  mode,
+  onSelectMode,
 }: Props) {
   const [viewMode, setViewMode] = useState<'history' | 'favorites' | 'all'>('history')
+  // Projects start collapsed — their session history only loads in once clicked open.
   const [collapsedRepos, setCollapsedRepos] = useState<Record<string, boolean>>({})
+  const [expandedHistory, setExpandedHistory] = useState<Record<string, boolean>>({})
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [themeHovered, setThemeHovered] = useState(false)
+  const { activeTheme, setTheme } = useTheme()
+
+  const HISTORY_PAGE_SIZE = 5
 
   function toggleRepo(gitRoot: string) {
-    setCollapsedRepos(prev => ({ ...prev, [gitRoot]: !prev[gitRoot] }))
+    setCollapsedRepos(prev => ({ ...prev, [gitRoot]: !(prev[gitRoot] ?? true) }))
+  }
+
+  function toggleShowAllHistory(gitRoot: string) {
+    setExpandedHistory(prev => ({ ...prev, [gitRoot]: !prev[gitRoot] }))
   }
 
   // Filter sessions based on search or active view mode
@@ -39,24 +59,44 @@ export function Sidebar({
   const allSessions = repoGroups.flatMap(g => g.sessions)
 
   return (
-    <div className="flex flex-col h-full w-80 shrink-0 bg-[#0c0e14] border-r border-white/[0.06] select-none text-white/80">
-      {/* App Branding & Window Header placeholder */}
-      <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-400 flex items-center justify-center text-[11px] font-black text-white shadow-sm">
-            S
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-white/90">Stowe</span>
+    <div className="flex flex-col h-full w-80 shrink-0 bg-bg-sidebar border-r border-border-subtle select-none text-white/80">
+      {/* Section switcher: API Chat (upcoming) | Code CLI */}
+      {SHOW_API_CHAT && (
+      <div className="px-3 pt-3 pb-1">
+        <div className="flex bg-white/[0.03] border border-border-subtle rounded-xl p-0.5">
+          {([
+            { id: 'chat', label: 'API Chat' },
+            { id: 'code', label: 'Code CLI' },
+          ] as const).map(section => (
+            <button
+              key={section.id}
+              onClick={() => onSelectMode(section.id)}
+              className={`flex-1 py-1.5 rounded-[10px] text-xs font-medium transition-colors ${
+                mode === section.id
+                  ? 'bg-white/[0.09] text-white shadow-sm'
+                  : 'text-white/40 hover:text-white/75'
+              }`}
+            >
+              {section.label}
+            </button>
+          ))}
         </div>
       </div>
+      )}
 
+      {SHOW_API_CHAT && mode === 'chat' ? (
+        <div className="flex-1 flex items-center justify-center px-6 text-center">
+          <p className="text-xs text-white/30">API chat sessions will appear here once available.</p>
+        </div>
+      ) : (
+      <>
       {/* New Session Button */}
       <div className="px-3 py-2">
         <button
           onClick={onNewChat}
-          className="w-full bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.06] border border-white/[0.08] text-white/90 hover:text-white rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-sm font-medium transition-all shadow-sm group"
+          className="w-full bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.06] border border-border-subtle text-white/90 hover:text-white rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-sm font-medium transition-all shadow-sm group"
         >
-          <span className="text-blue-400 font-light text-lg leading-none group-hover:scale-110 transition-transform">+</span>
+          <span className="text-accent-primary font-light text-lg leading-none group-hover:scale-110 transition-transform">+</span>
           <span>New Session</span>
         </button>
       </div>
@@ -104,7 +144,7 @@ export function Sidebar({
             placeholder="Search sessions..."
             value={searchQuery}
             onChange={e => onSearch(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-white/30 outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all"
+            className="w-full bg-white/[0.03] border border-border-subtle rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-white/30 outline-none focus:border-accent-primary/50 focus:bg-white/[0.05] transition-all"
           />
           {searchQuery && (
             <button
@@ -162,12 +202,14 @@ export function Sidebar({
         ) : (
           <div>
             <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-2 mb-2">
-              REPOSITORIES
+              PROJECTS
             </p>
             <div className="space-y-1">
               {repoGroups.map(group => {
-                const isCollapsed = collapsedRepos[group.gitRoot]
+                const isCollapsed = collapsedRepos[group.gitRoot] ?? true
                 const groupSessions = group.sessions
+                const showAll = expandedHistory[group.gitRoot] ?? false
+                const visibleSessions = showAll ? groupSessions : groupSessions.slice(0, HISTORY_PAGE_SIZE)
 
                 return (
                   <div key={group.gitRoot} className="space-y-0.5">
@@ -190,10 +232,10 @@ export function Sidebar({
                       </span>
                     </div>
 
-                    {/* Sessions inside this repo */}
+                    {/* Sessions inside this repo — loaded only once the project is opened */}
                     {!isCollapsed && (
-                      <div className="pl-2 pr-1 space-y-0.5 border-l border-white/[0.04] ml-3">
-                        {groupSessions.map(s => (
+                      <div className="pl-2 pr-1 space-y-0.5 border-l border-border-subtle ml-3">
+                        {visibleSessions.map(s => (
                           <SessionCard
                             key={s.id}
                             session={s}
@@ -201,6 +243,14 @@ export function Sidebar({
                             onOpen={onSelectSession}
                           />
                         ))}
+                        {groupSessions.length > HISTORY_PAGE_SIZE && (
+                          <button
+                            onClick={() => toggleShowAllHistory(group.gitRoot)}
+                            className="w-full text-left px-2.5 py-1.5 text-[11px] font-medium text-accent-primary/80 hover:text-accent-primary transition-colors"
+                          >
+                            {showAll ? 'Show less' : 'Show more'}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -210,13 +260,72 @@ export function Sidebar({
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Settings Footer */}
-      <div className="p-3 border-t border-white/[0.06] mt-auto">
-        <button className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors w-full">
+      <div className="p-3 border-t border-border-subtle mt-auto relative">
+        <button
+          onClick={() => setSettingsOpen(open => !open)}
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors w-full ${
+            settingsOpen ? 'bg-white/[0.08] text-white font-medium' : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+          }`}
+        >
           <span className="text-base">⚙</span>
           <span>Settings</span>
         </button>
+
+        {settingsOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => { setSettingsOpen(false); setThemeHovered(false) }} />
+            <div className="absolute left-3 bottom-full mb-2 z-50 w-52 rounded-xl border border-border-subtle bg-bg-sidebar shadow-2xl py-1.5 text-xs text-white/80 select-none">
+              <div
+                className="relative px-3 py-2 flex items-center justify-between hover:bg-white/[0.06] hover:text-white cursor-pointer transition-colors"
+                onMouseEnter={() => setThemeHovered(true)}
+                onMouseLeave={() => setThemeHovered(false)}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm">🎨</span>
+                  <span>Theme</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-white/40">
+                  <span className="text-[11px] truncate max-w-[80px] text-accent-primary">{activeTheme.name}</span>
+                  <span>›</span>
+                </div>
+
+                {/* Submenu for themes */}
+                {themeHovered && (
+                  <div className="absolute left-full bottom-0 ml-1 z-50 w-48 rounded-xl border border-border-subtle bg-bg-sidebar shadow-2xl py-1.5 overflow-hidden">
+                    <p className="px-3 py-1 text-[10px] font-bold text-white/30 uppercase tracking-wider">Select Theme</p>
+                    <div className="h-px bg-border-subtle my-1" />
+                    <div className="max-h-60 overflow-y-auto">
+                      {THEMES.map(t => {
+                        const isAct = activeTheme.id === t.id
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setTheme(t.id)
+                              setSettingsOpen(false)
+                              setThemeHovered(false)
+                            }}
+                            className={`w-full px-3 py-1.5 flex items-center justify-between text-left hover:bg-white/[0.06] transition-colors ${
+                              isAct ? 'text-accent-primary font-medium' : 'text-white/80 hover:text-white'
+                            }`}
+                          >
+                            <span className="truncate">{t.name}</span>
+                            {isAct && <span className="text-accent-primary shrink-0 ml-2">✓</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

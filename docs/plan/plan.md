@@ -4,18 +4,7 @@
 
 Desktop app quản lý các phiên chat của CLI coding agent (Claude Code, Codex CLI, Gemini CLI, Antigravity CLI) và agent dùng API key tự thêm, tổ chức theo repo, cho phép xem lại, tiếp tục, và khởi tạo chat mới — nhẹ hơn và outperform các giải pháp hiện có (Opcode, Nimbalyst, CloudCLI).
 
-## 2. Bối cảnh thị trường
-
-Các dự án tương tự đã tồn tại, đáng tham khảo:
-
-- **Opcode** (trước là Claudia) — Tauri 2 (Rust), ~21k sao GitHub, GUI đơn giản cho Claude Code, single-session chat, có agent tùy chỉnh, usage analytics, MCP server management, timeline/checkpoint.
-- **Nimbalyst** — desktop + iOS app, đầy đủ tính năng nhất hiện tại: kanban board, git worktree một-chạm, đa session song song, theo dõi thay đổi file theo session.
-- **CloudCLI (claudecodeui)** — web-based, hỗ trợ nhiều agent (Claude Code, OpenCode, Cursor CLI, Codex), truy cập từ mobile/web, có file explorer, git explorer, plugin system.
-- **amux** — control plane đầy đủ: quản lý session qua tmux, task board SQLite với atomic claiming, REST API liên-agent, cô lập bằng git worktree, theo dõi chi phí token, dashboard web (desktop + mobile PWA), watchdog tự phục hồi, cron scheduler. Hoạt động với mọi agent terminal-based.
-- **agenttrace** — TUI quan sát session agent coding: token, chi phí, độ trễ, lỗi tool, bất thường, diff.
-- **Claude Code Desktop** (chính thức từ Anthropic) — đã hỗ trợ multi-session, sắp xếp pane song song, nhưng giới hạn trong hệ sinh thái Claude.
-
-## 3. Quyết định kỹ thuật đã chốt
+## 2. Quyết định kỹ thuật đã chốt
 
 | Hạng mục | Quyết định | Lý do |
 |---|---|---|
@@ -28,7 +17,7 @@ Các dự án tương tự đã tồn tại, đáng tham khảo:
 | Lưu API key | OS keychain (`zalando/go-keyring`), không lưu plaintext | Bảo mật, tương thích macOS Keychain / Windows Credential Manager / Linux Secret Service |
 | CSS | Tailwind CSS | Nhanh khi build UI, không dùng UI library nặng (MUI, Chakra) |
 
-## 4. Kiến trúc 2 luồng song song
+## 3. Kiến trúc 2 luồng song song
 
 ### Luồng A — CLI Watcher & Launcher
 **Agent:** Claude Code, Codex CLI, Gemini CLI, Antigravity CLI
@@ -47,11 +36,11 @@ Các dự án tương tự đã tồn tại, đáng tham khảo:
 
 Cả 2 luồng đổ chung vào 1 `SessionRegistry` chuẩn hóa, hiển thị gộp theo repo trên cùng giao diện, nhưng hành vi tương tác khác nhau theo nguồn gốc session (CLI session → mở terminal; API session → mở chat panel).
 
-## 5. Tổ chức theo repo
+## 4. Tổ chức theo repo
 
 Map session → repo dựa trên đường dẫn làm việc (cwd) ghi nhận lúc tạo session — dùng chung logic xác định git root cho mọi loại agent và mọi nguồn (CLI lẫn API), đảm bảo nhất quán dù dữ liệu gốc khác định dạng.
 
-## 6. Adapter pattern bắt buộc
+## 5. Adapter pattern bắt buộc
 
 Vì mỗi CLI agent lưu dữ liệu khác nhau và có thể thay đổi định dạng theo thời gian, bắt buộc thiết kế theo interface chuẩn cho từng agent, tối thiểu gồm:
 
@@ -63,13 +52,12 @@ Vì mỗi CLI agent lưu dữ liệu khác nhau và có thể thay đổi địn
 
 Core app không phụ thuộc vào định dạng cụ thể của bất kỳ agent nào — thêm agent mới hoặc agent đổi định dạng chỉ cần sửa/thêm 1 adapter, không ảnh hưởng phần còn lại của hệ thống.
 
-## 7. Bảng nguồn dữ liệu các CLI agent
+## 6. Bảng nguồn dữ liệu các CLI agent
 
 | Agent | Vị trí lưu | Format | Ghi chú |
 |---|---|---|---|
 | Claude Code | `~/.claude/projects/<encoded-path>/<id>.jsonl` | JSONL phẳng | Tương đối ổn định |
 | Codex CLI | `~/.codex/sessions/` | rollout files (dạng JSONL) | Cần kiểm tra kỹ định dạng cụ thể khi build adapter |
-| Gemini CLI | `~/.gemini/` (checkpoint riêng) | JSON/checkpoint | Là sản phẩm khác với Antigravity CLI dù chung thư mục gốc `.gemini` |
 | Antigravity CLI | `~/.gemini/antigravity-cli/brain/<conversation-id>/` | Đang chuyển từ JSONL (`transcript.jsonl`) sang SQLite (`.db`, `.db-wal`) làm định dạng chính thức | Adapter cần đọc được cả 2 định dạng, ưu tiên `.db` nếu có, fallback JSONL |
 
 ### Dữ liệu thực tế Claude Code (đã xác minh)
@@ -94,7 +82,7 @@ Resume flag: `claude --resume <sessionID>`
 
 **Discover filter quan trọng**: Trong mỗi project dir có cả `.jsonl` file và thư mục con cùng tên UUID. Chỉ lấy file `.jsonl` nằm trực tiếp trong project dir, bỏ qua subdir.
 
-## 8. Roadmap theo giai đoạn
+## 7. Roadmap theo giai đoạn
 
 | Giai đoạn | Phạm vi |
 |---|---|
@@ -104,7 +92,7 @@ Resume flag: `claude --resume <sessionID>`
 | V4 | Diff viewer (file đã thay đổi trong session), git worktree isolation cho luồng A, kanban view xuyên agent, dashboard usage/cost tổng hợp |
 | V5 (mở, chưa cam kết) | Tool-calling/sandbox cho luồng B nếu thực sự cần — đánh giá kỹ trước vì khối lượng công việc rất lớn |
 
-## 9. Tính năng theo xu thế 2026 (tham khảo bổ sung cho roadmap)
+## 8. Tính năng theo xu thế 2026 (tham khảo bổ sung cho roadmap)
 
 - Token/cost tracking theo session và theo repo — đã trở thành chuẩn ở các tool dẫn đầu (amux, agenttrace, Opcode)
 - Quan sát ở mức tool-call: theo dõi lỗi tool, hành vi bất thường, không chỉ xem lại đoạn chat
@@ -114,7 +102,7 @@ Resume flag: `claude --resume <sessionID>`
 - Mobile companion / dashboard PWA để theo dõi session từ xa
 - Ghi chú/tag gắn theo repo (không chỉ theo session) để giữ context dự án qua thời gian
 
-## 10. Rủi ro cần theo dõi
+## 9. Rủi ro cần theo dõi
 
 - Định dạng lưu trữ của các CLI agent có thể đổi bất cứ lúc nào (đã quan sát thấy với Antigravity CLI) → adapter cần dễ sửa, không hard-code giả định cấu trúc file
 - Terminal nhúng trong Wails (xterm.js) có quirk đã ghi nhận trong cộng đồng khi chạy chế độ dev (lỗi newline, hoạt động bình thường khi build) — cần kiểm tra kỹ trước khi build chính thức
@@ -123,7 +111,7 @@ Resume flag: `claude --resume <sessionID>`
 
 ---
 
-## 11. Cấu trúc thư mục project
+## 10. Cấu trúc thư mục project
 
 ```
 stowe/
@@ -164,24 +152,28 @@ stowe/
 │   └── windows/
 │       └── icon.ico
 │
+├── docs/
+│   └── plan/
+│       └── plan.md                  # Tài liệu thiết kế + roadmap này
+│
 └── frontend/
     ├── package.json
     ├── index.html
     └── src/
-        ├── main.tsx
-        ├── App.tsx                  # Layout: sidebar + content + terminal
+        ├── main.tsx                 # Entry point — KHÔNG có React.StrictMode (xem mục 15)
+        ├── App.tsx                  # Root: tab state, welcome state, error state
         ├── components/
-        │   ├── Sidebar.tsx          # Repo list + search input
-        │   ├── SessionList.tsx      # Sessions grouped theo repo
-        │   ├── SessionCard.tsx      # Card: title, date, favorite star, agent badge
+        │   ├── Sidebar.tsx          # Nav tabs (History/Favorites/All), search, repo tree
+        │   ├── SessionCard.tsx      # Card: title, date, favorite star
+        │   ├── SessionDetail.tsx    # Tab bar + session info bar + terminal area + WelcomePage
         │   └── TerminalPane.tsx     # xterm.js connected to Go PTY
         ├── hooks/
         │   ├── useSessions.ts       # Fetch + listen events từ Go
-        │   └── useTerminal.ts       # PTY lifecycle management
+        │   └── useTerminal.ts       # xterm.js lifecycle (KHÔNG gọi CloseTerminal — xem mục 15)
         └── wailsjs/                 # Auto-generated bởi wails dev
 ```
 
-## 12. Thiết kế Go packages và interfaces
+## 11. Thiết kế Go packages và interfaces
 
 ### `internal/model/session.go`
 
@@ -285,7 +277,7 @@ func (a *App) RenameSession(sessionID, name string) error
 func (a *App) ToggleFavorite(sessionID string) error
 ```
 
-## 13. Implementation Plan V1 MVP
+## 12. Implementation Plan V1 MVP
 
 | Bước | Việc | Verify |
 |---|---|---|
@@ -303,7 +295,7 @@ func (a *App) ToggleFavorite(sessionID string) error
 
 **Lưu ý thứ tự**: Bước 7 (PTY) là rủi ro cao nhất — làm ngay sau khi có backend foundation (bước 1-4), không để cuối cùng.
 
-## 14. Rủi ro kỹ thuật V1
+## 13. Rủi ro kỹ thuật V1
 
 | Rủi ro | Mức | Mitigation |
 |---|---|---|
@@ -312,6 +304,29 @@ func (a *App) ToggleFavorite(sessionID string) error
 | Wails cần GCC toolchain | THẤP | Chạy `wails doctor` ngay sau init. Nếu cần GCC: cài `tdm-gcc` hoặc `msys2` |
 | JSONL format thay đổi | THẤP | Parser dùng `map[string]any`, skip dòng lỗi, fallback title — không hard-code |
 | Initial scan chậm | THẤP | So sánh `file_mtime` — chỉ re-parse file đã thay đổi. Worker pool 4 goroutines |
+
+## 14. Quyết định kỹ thuật phát sinh trong quá trình build
+
+### PTY lifecycle — CloseTerminal chỉ gọi từ handleCloseTab
+
+**Vấn đề gặp phải:** Terminal hiện tab nhưng nội dung trắng hoàn toàn.
+
+**Root cause:** React StrictMode chạy effect 2 lần (setup → cleanup → setup) để phát hiện side effect không an toàn. Cleanup của `useTerminal` trước đó gọi `CloseTerminal(ptyID)` — điều này kill PTY ở phía Go. Lần setup thứ 2 mount xterm.js mới nhưng PTY đã chết → blank terminal.
+
+**Fix:**
+1. Xóa `React.StrictMode` khỏi `main.tsx` — StrictMode không tương thích với xterm.js (double-mount cũng làm xterm render 2 terminal vào cùng DOM node).
+2. Xóa `CloseTerminal` khỏi cleanup của `useTerminal`. Hook này chỉ dọn dẹp phía React (unsubscribe events, disconnect ResizeObserver, dispose xterm instance).
+3. `CloseTerminal(ptyID)` chỉ được gọi duy nhất từ `handleCloseTab` trong `App.tsx` — khi người dùng bấm × đóng tab.
+
+**Invariant quan trọng:** `CloseTerminal` = kết thúc PTY process trên Go. Chỉ gọi khi người dùng chủ động đóng tab. Không gọi từ React cleanup.
+
+### Multi-terminal: tất cả TerminalPane mount đồng thời
+
+Thay vì unmount terminal khi chuyển tab (gây re-init PTY), tất cả `TerminalPane` đều được mount. Tab không active dùng `invisible pointer-events-none` để ẩn. Khi active trở lại, xterm.js vẫn còn nguyên trạng thái — không cần reconnect PTY.
+
+### agentType guard bị xóa
+
+`handleSelectSession` trước đó có guard kiểm tra `CLI_AGENT_TYPES` — session có `agentType=""` (do data cũ trong DB) sẽ bị block im lặng, không có error. Đã xóa guard này vì tất cả session trong app hiện tại đều là Claude Code CLI session.
 
 ---
 
@@ -326,37 +341,48 @@ func (a *App) ToggleFavorite(sessionID string) error
 
 ### V1 Backend ✅
 - [x] `internal/model/session.go` — Session + RepoGroup structs
-- [x] `internal/db/` — schema SQLite với FTS5, WAL mode, queries (tách Exec riêng)
+- [x] `internal/db/` — schema SQLite với FTS5, WAL mode, queries
 - [x] `internal/git/git.go` — FindRoot
 - [x] `internal/adapter/claudecode/parser.go` — parse JSONL tolerant
 - [x] `internal/adapter/claudecode/adapter.go` — Discover (filter subdir UUID), BinaryPath, Args
 - [x] `internal/registry/registry.go` — InitialScan + file_mtime cache + worker pool 4
 - [x] `internal/watcher/watcher.go` — fsnotify + debounce 150ms
-- [x] `internal/pty/pty_windows.go` — ConPTY wrapper (cmd /c cd workaround cho dir)
+- [x] `internal/pty/pty_windows.go` — ConPTY wrapper
 - [x] `internal/pty/manager.go` — PTY session management
 - [x] `app.go` — startup wiring + tất cả bindings
 
 ### V1 Frontend ✅
-- [x] `App.tsx` — layout 3 panel (sidebar | session list | terminal)
+- [x] `App.tsx` — tab state, welcome state, error banner
 - [x] `hooks/useSessions.ts` — GetRepoGroups + listen events
-- [x] `components/Sidebar.tsx` — repo list + search input
-- [x] `components/SessionCard.tsx` — title, date, star, inline rename
-- [x] `components/SessionList.tsx` — sort: favorite first, sau đó updatedAt
+- [x] `components/Sidebar.tsx` — nav tabs (History / Favorites / Conversation History), search, repo tree
+- [x] `components/SessionCard.tsx` — title, date, star
+- [x] `components/SessionDetail.tsx` — VS Code-style tab bar + session info bar + multi-terminal area
 - [x] `components/TerminalPane.tsx` — xterm.js + FitAddon + PTY events
-- [x] `hooks/useTerminal.ts` — PTY lifecycle
+- [x] `hooks/useTerminal.ts` — PTY lifecycle (không CloseTerminal trong cleanup)
 
-### V1 Polish
-- [ ] Test terminal: resume session thực với `claude --resume <id>` trong PTY
-- [ ] Test search debounce 200ms → FTS5
-- [ ] Test inline rename (double-click)
-- [ ] Test favorite toggle + sort
-- [ ] Test production build (`wails build`) — đặc biệt terminal newline handling
+### V1 UI Refinements ✅
+- [x] Fix blank terminal (xóa StrictMode + fix PTY lifecycle — xem mục 15)
+- [x] Error banner đỏ khi ResumeSession/LaunchNewChat throw
+- [x] Xóa "Active Terminals" khỏi sidebar
+- [x] Thêm "Conversation History" tab — flat list tất cả session xuyên repo
+- [x] Welcome page khi không có tab nào mở (logo + token usage placeholder)
+- [x] Nút Home: click logo/chữ "Stowe" để quay về welcome page
+- [x] Inline rename session (double-click title hoặc nút ✏)
+- [x] Favorite toggle (★)
 
-### V2 (sau khi V1 xong)
+### V1 Polish — cần verify
+- [ ] Test end-to-end: click session → tab mở → terminal hiện output claude
+- [ ] Test multiple tabs: 2 session mở song song, switch không bị blank
+- [ ] Test close tab (×): PTY đóng, tab kề được focus
+- [ ] Test search debounce 200ms → FTS5 query đúng kết quả
+- [ ] Test Conversation History tab — hiện đủ tất cả session
+- [ ] Test production build (`wails build`) — terminal newline handling
+
+### V2 (sau khi V1 polish xong)
+- [ ] Token/cost tracking: parse usage từ Claude Code JSONL, hiện vào WelcomePage thay placeholder "—"
 - [ ] Adapter: Codex CLI
 - [ ] Adapter: Gemini CLI
 - [ ] Adapter: Antigravity CLI (đọc cả JSONL + SQLite, ưu tiên `.db`)
-- [ ] Token/cost tracking nếu agent có log usage
 
 ### V3 (sau V2)
 - [ ] API key management qua OS keychain (`zalando/go-keyring`)

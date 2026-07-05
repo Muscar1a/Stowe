@@ -1,5 +1,89 @@
 @import "tailwindcss";
 
+:root {
+  --bg-main: #090b10;
+  --bg-sidebar: #0c0e14;
+  --bg-tabbar: #0a0c12;
+  --bg-terminal: #0d1117;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --accent-color: #3b82f6;
+  --accent-bg: rgba(59, 130, 246, 0.1);
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="catppuccin-mocha"] {
+  --bg-main: #1e1e2e;
+  --bg-sidebar: #181825;
+  --bg-tabbar: #11111b;
+  --bg-terminal: #11111b;
+  --border-color: rgba(203, 166, 247, 0.1);
+  --accent-color: #cba6f7;
+  --accent-bg: rgba(203, 166, 247, 0.15);
+  --text-main: #cdd6f4;
+  --text-muted: #a6adc8;
+}
+
+[data-theme="dracula"] {
+  --bg-main: #282a36;
+  --bg-sidebar: #21222c;
+  --bg-tabbar: #1e1f29;
+  --bg-terminal: #282a36;
+  --border-color: rgba(189, 147, 249, 0.1);
+  --accent-color: #bd93f9;
+  --accent-bg: rgba(189, 147, 249, 0.15);
+  --text-main: #f8f8f2;
+  --text-muted: #6272a4;
+}
+
+[data-theme="tokyo-night"] {
+  --bg-main: #1a1b26;
+  --bg-sidebar: #16161e;
+  --bg-tabbar: #1f2335;
+  --bg-terminal: #1a1b26;
+  --border-color: rgba(122, 162, 247, 0.1);
+  --accent-color: #7aa2f7;
+  --accent-bg: rgba(122, 162, 247, 0.15);
+  --text-main: #a9b1d6;
+  --text-muted: #565f89;
+}
+
+[data-theme="nord"] {
+  --bg-main: #2e3440;
+  --bg-sidebar: #242933;
+  --bg-tabbar: #2e3440;
+  --bg-terminal: #2e3440;
+  --border-color: rgba(136, 192, 208, 0.1);
+  --accent-color: #88c0d0;
+  --accent-bg: rgba(136, 192, 208, 0.15);
+  --text-main: #eceff4;
+  --text-muted: #d8dee9;
+}
+
+[data-theme="github-dark"] {
+  --bg-main: #0d1117;
+  --bg-sidebar: #010409;
+  --bg-tabbar: #161b22;
+  --bg-terminal: #0d1117;
+  --border-color: rgba(47, 129, 247, 0.1);
+  --accent-color: #2f81f7;
+  --accent-bg: rgba(47, 129, 247, 0.15);
+  --text-main: #c9d1d9;
+  --text-muted: #8b949e;
+}
+
+@theme {
+  --color-bg-main: var(--bg-main);
+  --color-bg-sidebar: var(--bg-sidebar);
+  --color-bg-tabbar: var(--bg-tabbar);
+  --color-bg-terminal: var(--bg-terminal);
+  --color-border-subtle: var(--border-color);
+  --color-accent-primary: var(--accent-color);
+  --color-accent-bg: var(--accent-bg);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -8,10 +92,11 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #0d1117;
-  color: white;
+  background: var(--bg-main);
+  color: var(--text-main);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Scrollbar */
@@ -22,9 +107,11 @@ html, body, #root {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: var(--border-color);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
+  background: var(--accent-color);
+  opacity: 0.5;
 }
+

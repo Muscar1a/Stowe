@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react'
-import { RenameSession, ToggleFavorite } from '../../wailsjs/go/main/App'
+import { ToggleFavorite } from '../../wailsjs/go/main/App'
+import { sessionTitle } from '../hooks/useSessions'
+import { useSessionRename } from '../hooks/useSessionRename'
 import type { Session } from '../hooks/useSessions'
 
 interface Props {
@@ -9,31 +10,15 @@ interface Props {
 }
 
 export function SessionCard({ session, isSelected, onOpen }: Props) {
-  const [editing, setEditing] = useState(false)
-  const [draftName, setDraftName] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { editing, draftName, setDraftName, inputRef, startRename, commitRename, cancelRename } = useSessionRename(session)
 
-  const displayTitle = session.customName || session.title || 'Untitled Session'
+  const displayTitle = sessionTitle(session, 'Untitled Session')
   const date = session.updatedAt
     ? formatRelative(new Date(session.updatedAt))
     : 'just now'
 
   // Determine agent badge info
   const badgeInfo = getBadgeInfo(session)
-
-  function startRename() {
-    setDraftName(session.customName || session.title || '')
-    setEditing(true)
-    setTimeout(() => inputRef.current?.select(), 0)
-  }
-
-  function commitRename() {
-    setEditing(false)
-    const name = draftName.trim()
-    if (name && name !== (session.customName || session.title)) {
-      RenameSession(session.id, name)
-    }
-  }
 
   function handleFavorite(e: React.MouseEvent) {
     e.stopPropagation()
@@ -60,13 +45,13 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
         {editing ? (
           <input
             ref={inputRef}
-            className="w-full bg-white/10 text-white text-sm rounded px-1.5 py-0.5 outline-none border border-blue-500"
+            className="w-full bg-white/10 text-white text-sm rounded px-1.5 py-0.5 outline-none border border-accent-primary"
             value={draftName}
             onChange={e => setDraftName(e.target.value)}
             onBlur={commitRename}
             onKeyDown={e => {
               if (e.key === 'Enter') commitRename()
-              if (e.key === 'Escape') setEditing(false)
+              if (e.key === 'Escape') cancelRename()
             }}
             onClick={e => e.stopPropagation()}
           />

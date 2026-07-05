@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
 import { WriteToTerminal, ResizeTerminal } from '../../wailsjs/go/main/App'
+import { useTheme } from '../theme'
 
 interface PTYData { id: string; data: string }
 interface PTYExit { id: string; code: number }
@@ -11,6 +12,11 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
   const termRef = useRef<Terminal | null>(null)
   const fitRef = useRef<FitAddon | null>(null)
   const [exited, setExited] = useState(false)
+  const { activeTheme } = useTheme()
+
+  // Use a ref for theme so we can read it on mount without recreating the terminal session
+  const themeRef = useRef(activeTheme)
+  themeRef.current = activeTheme
 
   useEffect(() => {
     if (!containerRef.current || !ptyID) return
@@ -20,9 +26,9 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
       fontSize: 14,
       fontFamily: 'Cascadia Code, Consolas, monospace',
       theme: {
-        background: '#0d1117',
-        foreground: '#e6edf3',
-        cursor: '#58a6ff',
+        background: themeRef.current.terminalBg,
+        foreground: themeRef.current.terminalFg,
+        cursor: themeRef.current.terminalCursor,
       },
     })
     const fit = new FitAddon()
@@ -59,5 +65,17 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
     }
   }, [ptyID])
 
+  // Dynamically update theme options when user switches theme
+  useEffect(() => {
+    if (termRef.current) {
+      termRef.current.options.theme = {
+        background: activeTheme.terminalBg,
+        foreground: activeTheme.terminalFg,
+        cursor: activeTheme.terminalCursor,
+      }
+    }
+  }, [activeTheme])
+
   return { exited }
 }
+

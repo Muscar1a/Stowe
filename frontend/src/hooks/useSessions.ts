@@ -6,6 +6,11 @@ import type { model } from '../../wailsjs/go/models'
 export type RepoGroup = model.RepoGroup
 export type Session = model.Session
 
+/** Display title for a session: the user's custom name wins over the derived title. */
+export function sessionTitle(session: Session, fallback = 'Session'): string {
+  return session.customName || session.title || fallback
+}
+
 export function useSessions() {
   const [repoGroups, setRepoGroups] = useState<RepoGroup[]>([])
   const [selectedGitRoot, setSelectedGitRoot] = useState<string | null>(null)
