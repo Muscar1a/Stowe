@@ -1,7 +1,9 @@
-import { ToggleFavorite } from '../../wailsjs/go/main/App'
+import { useState } from 'react'
+import { DeleteSession, ToggleFavorite } from '../../wailsjs/go/main/App'
 import { sessionTitle } from '../hooks/useSessions'
 import { useSessionRename } from '../hooks/useSessionRename'
 import type { Session } from '../hooks/useSessions'
+import { DotsIcon, StarIcon } from './icons'
 
 interface Props {
   session: Session
@@ -11,6 +13,13 @@ interface Props {
 
 export function SessionCard({ session, isSelected, onOpen }: Props) {
   const { editing, draftName, setDraftName, inputRef, startRename, commitRename, cancelRename } = useSessionRename(session)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  function closeMenu() {
+    setMenuOpen(false)
+    setConfirmDelete(false)
+  }
 
   const displayTitle = sessionTitle(session, 'Untitled Session')
   const date = session.updatedAt
@@ -27,16 +36,16 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
 
   return (
     <div
-      className={`group flex items-start gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+      className={`group relative flex items-start gap-3 px-3 py-2.5 rounded-card cursor-pointer transition-colors ${
         isSelected
-          ? 'bg-white/[0.08] border border-white/[0.08] shadow-sm'
-          : 'hover:bg-white/[0.04] border border-transparent'
+          ? 'bg-bg-active border border-border-subtle'
+          : 'hover:bg-bg-raised border border-transparent'
       }`}
       onClick={() => onOpen(session)}
     >
       {/* Agent Badge */}
       <div
-        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-bold text-[11px] border mt-0.5 ${badgeInfo.className}`}
+        className={`w-7 h-7 rounded-chip flex items-center justify-center shrink-0 font-mono font-semibold text-[10px] border mt-0.5 ${badgeInfo.className}`}
       >
         {badgeInfo.label}
       </div>
@@ -45,7 +54,7 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
         {editing ? (
           <input
             ref={inputRef}
-            className="w-full bg-white/10 text-white text-sm rounded px-1.5 py-0.5 outline-none border border-accent-primary"
+            className="w-full bg-bg-active text-text-main text-sm rounded-chip px-1.5 py-0.5 outline-none border border-accent-primary"
             value={draftName}
             onChange={e => setDraftName(e.target.value)}
             onBlur={commitRename}
@@ -58,7 +67,7 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
         ) : (
           <div className="flex items-center justify-between gap-1">
             <p
-              className="text-sm font-medium text-white/90 group-hover:text-white truncate transition-colors"
+              className="text-sm font-medium text-text-main truncate"
               onDoubleClick={e => { e.stopPropagation(); startRename() }}
               title={displayTitle}
             >
@@ -67,21 +76,62 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
           </div>
         )}
         <div className="flex items-center justify-between mt-1">
-          <p className="text-[11px] text-white/40">{date}</p>
+          <p className="font-mono text-[10px] text-text-faint">{date}</p>
         </div>
       </div>
 
       <button
-        className={`shrink-0 text-sm mt-1 transition-opacity ${
+        className={`shrink-0 mt-1 transition-opacity ${
           session.isFavorite
-            ? 'opacity-100 text-yellow-400'
-            : 'opacity-0 group-hover:opacity-60 text-white/40 hover:text-white'
+            ? 'opacity-100 text-accent-primary'
+            : 'opacity-0 group-hover:opacity-60 text-text-faint hover:text-text-main'
         }`}
         onClick={handleFavorite}
         title={session.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       >
-        ★
+        <StarIcon size={13} filled={session.isFavorite} />
       </button>
+
+      {/* More options (⋮) */}
+      <button
+        className={`shrink-0 mt-1 transition-opacity ${
+          menuOpen ? 'opacity-100 text-text-main' : 'opacity-0 group-hover:opacity-60 text-text-faint hover:text-text-main'
+        }`}
+        onClick={e => { e.stopPropagation(); menuOpen ? closeMenu() : setMenuOpen(true) }}
+        title="More options"
+      >
+        <DotsIcon size={13} />
+      </button>
+
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); closeMenu() }} />
+          <div
+            className="absolute right-2 top-10 z-50 w-44 rounded-card border border-border-subtle bg-bg-tabbar shadow-xl py-1"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="w-full text-left px-3 py-1.5 text-xs text-text-muted hover:text-text-main hover:bg-bg-hover"
+              onClick={() => { closeMenu(); startRename() }}
+            >
+              Rename
+            </button>
+            <button
+              className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-bg-hover"
+              onClick={() => {
+                if (!confirmDelete) {
+                  setConfirmDelete(true)
+                  return
+                }
+                closeMenu()
+                DeleteSession(session.id)
+              }}
+            >
+              {confirmDelete ? 'Click again to confirm' : 'Delete Conversation'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -91,18 +141,18 @@ function getBadgeInfo(session: Session): { label: string; className: string } {
   if (type.includes('claude') || type.includes('cc') || type.includes('build') || type.includes('refactor') || type.includes('xor')) {
     return {
       label: 'CC',
-      className: 'bg-[#2a1717]/80 border-[#5c2828] text-[#f87171]',
+      className: 'bg-red-400/10 border-red-400/25 text-red-400',
     }
   }
   if (type.includes('gemini') || type.includes('ge') || type.includes('explain')) {
     return {
       label: 'GE',
-      className: 'bg-[#162032]/80 border-[#233858] text-[#60a5fa]',
+      className: 'bg-blue-400/10 border-blue-400/25 text-blue-400',
     }
   }
   return {
     label: 'AI',
-    className: 'bg-[#132820]/80 border-[#1b4d3e] text-[#34d399]',
+    className: 'bg-emerald-400/10 border-emerald-400/25 text-emerald-400',
   }
 }
 

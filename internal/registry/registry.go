@@ -206,6 +206,25 @@ func (r *Registry) SetCustomName(id, name string) error {
 	return nil
 }
 
+// DeleteSession removes a session from DB and cache, and deletes its file on
+// disk — otherwise the next scan would re-index it.
+func (r *Registry) DeleteSession(id string) error {
+	r.mu.Lock()
+	s, ok := r.cache[id]
+	delete(r.cache, id)
+	r.mu.Unlock()
+
+	if err := r.db.DeleteSession(id); err != nil {
+		return err
+	}
+	if ok && s.FilePath != "" {
+		if err := os.Remove(s.FilePath); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+	return nil
+}
+
 func (r *Registry) ToggleFavorite(id string) error {
 	if err := r.db.ToggleFavorite(id); err != nil {
 		return err

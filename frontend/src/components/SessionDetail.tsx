@@ -6,6 +6,17 @@ import type { Session, RepoGroup } from '../hooks/useSessions'
 import type { TabEntry } from '../App'
 import { TerminalPane } from './TerminalPane'
 import { Starburst } from './Starburst'
+import {
+  ArrowRightIcon,
+  BranchIcon,
+  FolderIcon,
+  HexIcon,
+  MessageIcon,
+  PencilIcon,
+  SparkIcon,
+  StarIcon,
+  XIcon,
+} from './icons'
 
 interface Props {
   session: Session | null
@@ -52,14 +63,14 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showH
                   : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03] border-t-[1.5px] border-t-transparent'
               }`}
             >
-              <span className="font-mono text-[10px] text-white/30 shrink-0">&gt;_</span>
+              <span className="font-mono text-[10px] text-text-faint shrink-0">&gt;_</span>
               <span className="truncate flex-1">{tabTitle}</span>
               <button
                 onClick={e => { e.stopPropagation(); onCloseTab(tab.ptyID) }}
-                className="shrink-0 w-4 h-4 flex items-center justify-center rounded text-white/30 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
+                className="shrink-0 w-4 h-4 flex items-center justify-center rounded-chip text-text-faint hover:text-text-main hover:bg-bg-active opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
                 title="Close"
               >
-                ×
+                <XIcon size={10} />
               </button>
             </div>
           )
@@ -67,14 +78,19 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showH
       </div>
 
       {/* Thin session info bar */}
-      <div className="h-9 border-b border-border-subtle px-4 flex items-center gap-2 text-xs text-white/50 shrink-0 bg-white/[0.01]">
-        {repoName && <span className="text-white/35 shrink-0">📁 {repoName}</span>}
-        {repoName && <span className="text-white/20">/</span>}
+      <div className="h-9 border-b border-border-subtle px-4 flex items-center gap-2 text-xs text-text-muted shrink-0">
+        {repoName && (
+          <span className="flex items-center gap-1.5 text-text-faint shrink-0">
+            <FolderIcon size={12} />
+            {repoName}
+          </span>
+        )}
+        {repoName && <span className="text-text-faint">/</span>}
 
         {editing ? (
           <input
             ref={inputRef}
-            className="bg-white/10 text-white text-xs rounded px-1.5 py-0.5 outline-none border border-accent-primary min-w-0"
+            className="bg-bg-active text-text-main text-xs rounded-chip px-1.5 py-0.5 outline-none border border-accent-primary min-w-0"
             value={draftName}
             onChange={e => setDraftName(e.target.value)}
             onBlur={commitRename}
@@ -85,7 +101,7 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showH
           />
         ) : (
           <span
-            className="text-white/75 font-medium truncate cursor-pointer hover:text-white transition-colors"
+            className="text-text-main font-medium truncate cursor-pointer transition-colors"
             onDoubleClick={startRename}
             title="Double-click to rename"
           >
@@ -97,20 +113,24 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showH
           <>
             <button
               onClick={startRename}
-              className="text-white/25 hover:text-white/65 transition-colors shrink-0"
+              className="text-text-faint hover:text-text-main transition-colors shrink-0"
               title="Rename"
-            >✏</button>
+            ><PencilIcon size={12} /></button>
             <button
               onClick={() => ToggleFavorite(session.id)}
-              className={`transition-colors shrink-0 ${session.isFavorite ? 'text-yellow-400' : 'text-white/25 hover:text-white/65'}`}
+              className={`transition-colors shrink-0 ${session.isFavorite ? 'text-accent-primary' : 'text-text-faint hover:text-text-main'}`}
               title={session.isFavorite ? 'Remove favorite' : 'Add favorite'}
-            >★</button>
+            ><StarIcon size={12} filled={session.isFavorite} /></button>
           </>
         )}
 
-        <div className="ml-auto flex items-center gap-2 text-white/35 shrink-0">
-          {session?.gitBranch && <span className="font-mono">⎇ {session.gitBranch}</span>}
-          {session?.messageCount != null && <span>💬 {session.messageCount}</span>}
+        <div className="ml-auto flex items-center gap-3 font-mono text-[11px] text-text-faint shrink-0">
+          {session?.gitBranch && (
+            <span className="flex items-center gap-1"><BranchIcon size={11} />{session.gitBranch}</span>
+          )}
+          {session?.messageCount != null && (
+            <span className="flex items-center gap-1"><MessageIcon size={11} />{session.messageCount}</span>
+          )}
         </div>
       </div>
 
@@ -159,13 +179,13 @@ const CLI_TOOLS: LauncherOption[] = [
   {
     name: 'Codex CLI',
     desc: 'OpenAI Codex terminal sessions',
-    icon: <span className="text-lg leading-none text-green-400">⬢</span>,
+    icon: <HexIcon size={18} className="text-green-400" />,
     available: false,
   },
   {
     name: 'Gemini CLI',
     desc: 'Google Gemini terminal sessions',
-    icon: <span className="text-lg leading-none text-blue-400">✦</span>,
+    icon: <SparkIcon size={18} className="text-blue-400" />,
     available: false,
   },
 ]
@@ -173,7 +193,7 @@ const CLI_TOOLS: LauncherOption[] = [
 const API_CHAT: LauncherOption = {
   name: 'Chat via API',
   desc: 'Regular conversations using your own API key',
-  icon: <span className="text-lg leading-none text-indigo-400">💬</span>,
+  icon: <MessageIcon size={18} className="text-indigo-400" />,
   available: false,
 }
 
@@ -184,8 +204,8 @@ function NewSessionPage({ onNewChat }: { onNewChat: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-bg-main select-none overflow-auto px-10 py-12">
       <div className="w-full max-w-xl">
-        <h1 className="text-xl font-bold text-white/90 mb-1 tracking-tight">Start a new session</h1>
-        <p className="text-sm text-white/40 mb-8">Pick how you want to chat.</p>
+        <h1 className="text-xl font-semibold text-text-main mb-1 tracking-tight">Start a new session</h1>
+        <p className="text-sm text-text-faint mb-8">Pick how you want to chat.</p>
 
         <SectionHeading label="Code CLI" />
         <div className="space-y-2 mb-8">
@@ -208,7 +228,7 @@ function NewSessionPage({ onNewChat }: { onNewChat: () => void }) {
 function SectionHeading({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 mb-3">
-      <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{label}</span>
+      <span className="font-mono text-[10px] font-semibold text-text-faint uppercase tracking-widest">{label}</span>
       <div className="flex-1 h-px bg-border-subtle" />
     </div>
   )
@@ -221,23 +241,23 @@ function LauncherCard({ option, onLaunch }: { option: LauncherOption; onLaunch: 
     <button
       onClick={available ? onLaunch : undefined}
       disabled={!available}
-      className={`w-full flex items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition-all ${
+      className={`w-full flex items-center gap-3.5 rounded-card border px-4 py-3.5 text-left transition-colors ${
         available
-          ? 'border-border-subtle bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] cursor-pointer'
-          : 'border-border-subtle bg-white/[0.01] opacity-60 cursor-default'
+          ? 'border-border-subtle bg-bg-raised hover:bg-bg-hover cursor-pointer'
+          : 'border-border-subtle opacity-60 cursor-default'
       }`}
     >
-      <div className="w-9 h-9 rounded-lg bg-white/[0.05] flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-control bg-bg-hover flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-white/85">{name}</p>
-        <p className="text-xs text-white/35 truncate">{desc}</p>
+        <p className="text-sm font-semibold text-text-main">{name}</p>
+        <p className="text-xs text-text-faint truncate">{desc}</p>
       </div>
       {available ? (
-        <span className="text-white/25 text-sm shrink-0">→</span>
+        <ArrowRightIcon size={13} className="text-text-faint shrink-0" />
       ) : (
-        <span className="text-[10px] font-semibold text-white/40 bg-white/[0.06] border border-white/[0.08] rounded-full px-2 py-0.5 shrink-0">
+        <span className="font-mono text-[10px] font-medium text-text-faint bg-bg-hover border border-border-subtle rounded-chip px-2 py-0.5 shrink-0 uppercase tracking-wide">
           Upcoming
         </span>
       )}

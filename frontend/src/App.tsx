@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar'
 import { SessionDetail } from './components/SessionDetail'
 import { useSessions, sessionTitle } from './hooks/useSessions'
 import { LaunchNewChat, ResumeSession, CloseTerminal } from '../wailsjs/go/main/App'
+import { MessageIcon } from './components/icons'
 import type { Session } from './hooks/useSessions'
 
 export interface TabEntry {
@@ -152,7 +153,7 @@ export default function App() {
   const canGoForward = forwardStack.some(isReachable)
 
   return (
-    <div className="flex flex-col h-screen bg-bg-main text-white overflow-hidden font-sans">
+    <div className="flex flex-col h-screen bg-bg-main text-text-main overflow-hidden font-sans">
       <TitleBar
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
@@ -164,7 +165,7 @@ export default function App() {
       {error && (
         <div className="shrink-0 bg-red-900/60 border-b border-red-700/50 px-4 py-2 text-xs text-red-300 flex items-center justify-between">
           <span>Error: {error}</span>
-          <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-white">×</button>
+          <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-text-main">×</button>
         </div>
       )}
       <div className="flex flex-1 min-h-0">
@@ -204,9 +205,11 @@ export default function App() {
 function ApiChatPlaceholder() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none min-w-0">
-      <div className="w-12 h-12 rounded-2xl bg-white/[0.05] flex items-center justify-center text-2xl">💬</div>
-      <p className="text-sm font-semibold text-white/85">Chat via API</p>
-      <p className="text-xs text-white/35">Upcoming — regular conversations using your own API key.</p>
+      <div className="w-12 h-12 rounded-card bg-bg-raised border border-border-subtle flex items-center justify-center text-text-faint">
+        <MessageIcon size={22} />
+      </div>
+      <p className="text-sm font-semibold text-text-main">Chat via API</p>
+      <p className="text-xs text-text-faint">Upcoming — regular conversations using your own API key.</p>
     </div>
   )
 }

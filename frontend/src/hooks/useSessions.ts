@@ -29,11 +29,17 @@ export function useSessions() {
     const offNew = EventsOn('session:new', () => {
       GetRepoGroups().then(setRepoGroups)
     })
+    const offDeleted = EventsOn('session:deleted', (id: string) => {
+      setRepoGroups(prev => prev
+        .map(g => ({ ...g, sessions: g.sessions.filter(s => s.id !== id) } as RepoGroup))
+        .filter(g => g.sessions.length > 0))
+    })
 
     return () => {
       offScan()
       offUpdated()
       offNew()
+      offDeleted()
     }
   }, [])
 

@@ -3,6 +3,18 @@ import type { RepoGroup, Session } from '../hooks/useSessions'
 import type { AppMode } from '../App'
 import { SessionCard } from './SessionCard'
 import { useTheme, THEMES } from '../theme'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FolderIcon,
+  GearIcon,
+  HistoryIcon,
+  ListIcon,
+  PlusIcon,
+  SearchIcon,
+  StarIcon,
+  XIcon,
+} from './icons'
 
 interface Props {
   repoGroups: RepoGroup[]
@@ -59,11 +71,11 @@ export function Sidebar({
   const allSessions = repoGroups.flatMap(g => g.sessions)
 
   return (
-    <div className="flex flex-col h-full w-80 shrink-0 bg-bg-sidebar border-r border-border-subtle select-none text-white/80">
+    <div className="flex flex-col h-full w-80 shrink-0 bg-bg-sidebar border-r border-border-subtle select-none text-text-main">
       {/* Section switcher: API Chat (upcoming) | Code CLI */}
       {SHOW_API_CHAT && (
       <div className="px-3 pt-3 pb-1">
-        <div className="flex bg-white/[0.03] border border-border-subtle rounded-xl p-0.5">
+        <div className="flex bg-bg-raised border border-border-subtle rounded-control p-0.5">
           {([
             { id: 'chat', label: 'API Chat' },
             { id: 'code', label: 'Code CLI' },
@@ -71,10 +83,10 @@ export function Sidebar({
             <button
               key={section.id}
               onClick={() => onSelectMode(section.id)}
-              className={`flex-1 py-1.5 rounded-[10px] text-xs font-medium transition-colors ${
+              className={`flex-1 py-1.5 rounded-chip text-xs font-medium transition-colors ${
                 mode === section.id
-                  ? 'bg-white/[0.09] text-white shadow-sm'
-                  : 'text-white/40 hover:text-white/75'
+                  ? 'bg-bg-active text-text-main'
+                  : 'text-text-faint hover:text-text-muted'
               }`}
             >
               {section.label}
@@ -86,7 +98,7 @@ export function Sidebar({
 
       {SHOW_API_CHAT && mode === 'chat' ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center">
-          <p className="text-xs text-white/30">API chat sessions will appear here once available.</p>
+          <p className="text-xs text-text-faint">API chat sessions will appear here once available.</p>
         </div>
       ) : (
       <>
@@ -94,9 +106,9 @@ export function Sidebar({
       <div className="px-3 py-2">
         <button
           onClick={onNewChat}
-          className="w-full bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.06] border border-border-subtle text-white/90 hover:text-white rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-sm font-medium transition-all shadow-sm group"
+          className="w-full bg-bg-raised hover:bg-bg-hover active:bg-bg-active border border-border-subtle text-text-main rounded-control px-3 py-2 flex items-center gap-2.5 text-sm font-medium transition-colors"
         >
-          <span className="text-accent-primary font-light text-lg leading-none group-hover:scale-110 transition-transform">+</span>
+          <PlusIcon className="text-accent-primary shrink-0" />
           <span>New Session</span>
         </button>
       </div>
@@ -105,31 +117,31 @@ export function Sidebar({
       <div className="px-2 py-1 space-y-0.5 text-sm">
         <button
           onClick={() => setViewMode('history')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-            viewMode === 'history' && !searchQuery ? 'bg-white/[0.06] text-white font-medium' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.03]'
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-control transition-colors ${
+            viewMode === 'history' && !searchQuery ? 'bg-bg-hover text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <span className="text-base leading-none opacity-80">↺</span>
+          <HistoryIcon className="shrink-0 opacity-70" />
           <span>Session History</span>
         </button>
 
         <button
           onClick={() => setViewMode('favorites')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-            viewMode === 'favorites' ? 'bg-white/[0.06] text-white font-medium' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.03]'
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-control transition-colors ${
+            viewMode === 'favorites' ? 'bg-bg-hover text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <span className="text-base leading-none opacity-80 text-yellow-400/90">☆</span>
+          <StarIcon className="shrink-0 opacity-70" />
           <span>Favorites</span>
         </button>
 
         <button
           onClick={() => setViewMode('all')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-            viewMode === 'all' ? 'bg-white/[0.06] text-white font-medium' : 'text-white/60 hover:text-white/90 hover:bg-white/[0.03]'
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-control transition-colors ${
+            viewMode === 'all' ? 'bg-bg-hover text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <span className="text-base leading-none opacity-80">☰</span>
+          <ListIcon className="shrink-0 opacity-70" />
           <span>Conversation History</span>
         </button>
 
@@ -138,20 +150,21 @@ export function Sidebar({
       {/* Search Input */}
       <div className="px-3 py-2">
         <div className="relative flex items-center">
-          <span className="absolute left-3 text-white/30 text-xs">🔍</span>
+          <SearchIcon size={12} className="absolute left-3 text-text-faint" />
           <input
             type="text"
             placeholder="Search sessions..."
             value={searchQuery}
             onChange={e => onSearch(e.target.value)}
-            className="w-full bg-white/[0.03] border border-border-subtle rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-white/30 outline-none focus:border-accent-primary/50 focus:bg-white/[0.05] transition-all"
+            className="w-full bg-bg-raised border border-border-subtle rounded-control pl-8 pr-7 py-2 text-xs text-text-main placeholder-text-faint outline-none focus:border-accent-primary/50 focus:bg-bg-hover transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => onSearch('')}
-              className="absolute right-2.5 text-white/40 hover:text-white text-xs"
+              className="absolute right-2.5 text-text-faint hover:text-text-main"
+              title="Clear search"
             >
-              ×
+              <XIcon size={12} />
             </button>
           )}
         </div>
@@ -161,11 +174,11 @@ export function Sidebar({
       <div className="flex-1 overflow-y-auto px-2 py-2 space-y-3">
         {viewMode === 'all' && !searchQuery ? (
           <div>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-2 mb-1.5">
+            <p className="font-mono text-[10px] font-semibold text-text-faint uppercase tracking-wider px-2 mb-1.5">
               ALL CONVERSATIONS ({allSessions.length})
             </p>
             {allSessions.length === 0 ? (
-              <p className="text-xs text-white/30 px-3 py-4 text-center">No conversations found</p>
+              <p className="text-xs text-text-faint px-3 py-4 text-center">No conversations found</p>
             ) : (
               <div className="space-y-0.5">
                 {allSessions.map(s => (
@@ -181,11 +194,11 @@ export function Sidebar({
           </div>
         ) : isFiltering ? (
           <div>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-2 mb-1.5">
+            <p className="font-mono text-[10px] font-semibold text-text-faint uppercase tracking-wider px-2 mb-1.5">
               {searchQuery ? `Search Results (${filteredSessions.length})` : 'Favorite Sessions'}
             </p>
             {filteredSessions.length === 0 ? (
-              <p className="text-xs text-white/30 px-3 py-4 text-center">No matching sessions found</p>
+              <p className="text-xs text-text-faint px-3 py-4 text-center">No matching sessions found</p>
             ) : (
               <div className="space-y-0.5">
                 {filteredSessions.map(s => (
@@ -201,7 +214,7 @@ export function Sidebar({
           </div>
         ) : (
           <div>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-2 mb-2">
+            <p className="font-mono text-[10px] font-semibold text-text-faint uppercase tracking-wider px-2 mb-2">
               PROJECTS
             </p>
             <div className="space-y-1">
@@ -216,18 +229,18 @@ export function Sidebar({
                     {/* Repo Header */}
                     <div
                       onClick={() => toggleRepo(group.gitRoot)}
-                      className="flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer hover:bg-white/[0.04] text-white/80 transition-colors"
+                      className="flex items-center justify-between px-2.5 py-1.5 rounded-control cursor-pointer hover:bg-bg-raised text-text-main transition-colors"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs text-white/40 transition-transform duration-150">
-                          {isCollapsed ? '›' : '⌄'}
+                        <span className="text-text-faint shrink-0">
+                          {isCollapsed ? <ChevronRightIcon size={12} /> : <ChevronDownIcon size={12} />}
                         </span>
-                        <span className="text-sm">📁</span>
-                        <span className="text-sm font-medium text-white/90 truncate">
+                        <FolderIcon className="text-text-faint shrink-0" />
+                        <span className="text-sm font-medium truncate">
                           {group.displayName}
                         </span>
                       </div>
-                      <span className="bg-white/[0.06] text-white/50 text-[11px] px-1.5 py-0.5 rounded-full font-medium shrink-0">
+                      <span className="bg-bg-hover text-text-faint font-mono text-[10px] px-1.5 py-0.5 rounded-full shrink-0">
                         {groupSessions.length}
                       </span>
                     </div>
@@ -267,36 +280,36 @@ export function Sidebar({
       <div className="p-3 border-t border-border-subtle mt-auto relative">
         <button
           onClick={() => setSettingsOpen(open => !open)}
-          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors w-full ${
-            settingsOpen ? 'bg-white/[0.08] text-white font-medium' : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-control text-sm transition-colors w-full ${
+            settingsOpen ? 'bg-bg-active text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <span className="text-base">⚙</span>
+          <GearIcon className="shrink-0 opacity-70" />
           <span>Settings</span>
         </button>
 
         {settingsOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => { setSettingsOpen(false); setThemeHovered(false) }} />
-            <div className="absolute left-3 bottom-full mb-2 z-50 w-52 rounded-xl border border-border-subtle bg-bg-sidebar shadow-2xl py-1.5 text-xs text-white/80 select-none">
+            <div className="absolute left-3 bottom-full mb-2 z-50 w-52 rounded-card border border-border-subtle bg-bg-tabbar shadow-2xl py-1.5 text-xs text-text-muted select-none">
               <div
-                className="relative px-3 py-2 flex items-center justify-between hover:bg-white/[0.06] hover:text-white cursor-pointer transition-colors"
+                className="relative px-3 py-2 flex items-center justify-between hover:bg-bg-hover hover:text-text-main cursor-pointer transition-colors"
                 onMouseEnter={() => setThemeHovered(true)}
                 onMouseLeave={() => setThemeHovered(false)}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm">🎨</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-accent-primary shrink-0" />
                   <span>Theme</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-white/40">
+                <div className="flex items-center gap-1.5 text-text-faint">
                   <span className="text-[11px] truncate max-w-[80px] text-accent-primary">{activeTheme.name}</span>
-                  <span>›</span>
+                  <ChevronRightIcon size={11} />
                 </div>
 
                 {/* Submenu for themes */}
                 {themeHovered && (
-                  <div className="absolute left-full bottom-0 ml-1 z-50 w-48 rounded-xl border border-border-subtle bg-bg-sidebar shadow-2xl py-1.5 overflow-hidden">
-                    <p className="px-3 py-1 text-[10px] font-bold text-white/30 uppercase tracking-wider">Select Theme</p>
+                  <div className="absolute left-full bottom-0 ml-1 z-50 w-48 rounded-card border border-border-subtle bg-bg-tabbar shadow-2xl py-1.5 overflow-hidden">
+                    <p className="px-3 py-1 font-mono text-[10px] font-semibold text-text-faint uppercase tracking-wider">Select Theme</p>
                     <div className="h-px bg-border-subtle my-1" />
                     <div className="max-h-60 overflow-y-auto">
                       {THEMES.map(t => {
@@ -310,8 +323,8 @@ export function Sidebar({
                               setSettingsOpen(false)
                               setThemeHovered(false)
                             }}
-                            className={`w-full px-3 py-1.5 flex items-center justify-between text-left hover:bg-white/[0.06] transition-colors ${
-                              isAct ? 'text-accent-primary font-medium' : 'text-white/80 hover:text-white'
+                            className={`w-full px-3 py-1.5 flex items-center justify-between text-left hover:bg-bg-hover transition-colors ${
+                              isAct ? 'text-accent-primary font-medium' : 'text-text-muted hover:text-text-main'
                             }`}
                           >
                             <span className="truncate">{t.name}</span>

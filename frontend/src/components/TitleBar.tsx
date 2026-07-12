@@ -28,8 +28,8 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
       <div className="flex items-center gap-1 px-2" style={noDrag}>
         <button
           onClick={() => setMenuOpen(open => !open)}
-          className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${
-            menuOpen ? 'bg-white/[0.1] text-white' : 'text-white/45 hover:text-white/90 hover:bg-white/[0.07]'
+          className={`w-7 h-7 flex items-center justify-center rounded-control transition-colors ${
+            menuOpen ? 'bg-bg-active text-text-main' : 'text-text-faint hover:text-text-main hover:bg-bg-hover'
           }`}
           title="Menu"
         >
@@ -37,7 +37,7 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
         </button>
         <button
           onClick={onToggleSidebar}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-white/45 hover:text-white/90 hover:bg-white/[0.07] transition-colors"
+          className="w-7 h-7 flex items-center justify-center rounded-control text-text-faint hover:text-text-main hover:bg-bg-hover transition-colors"
           title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
         >
           <SidebarIcon collapsed={sidebarCollapsed} />
@@ -45,7 +45,7 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
         <button
           onClick={onGoBack}
           disabled={!canGoBack}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-white/45 hover:text-white/90 hover:bg-white/[0.07] transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-white/45 disabled:cursor-default"
+          className="w-7 h-7 flex items-center justify-center rounded-control text-text-faint hover:text-text-main hover:bg-bg-hover transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-faint disabled:cursor-default"
           title="Go back"
         >
           <BackIcon />
@@ -53,7 +53,7 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
         <button
           onClick={onGoForward}
           disabled={!canGoForward}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-white/45 hover:text-white/90 hover:bg-white/[0.07] transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-white/45 disabled:cursor-default"
+          className="w-7 h-7 flex items-center justify-center rounded-control text-text-faint hover:text-text-main hover:bg-bg-hover transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-faint disabled:cursor-default"
           title="Go forward"
         >
           <ForwardIcon />
@@ -67,21 +67,21 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
       <div className="flex items-stretch" style={noDrag}>
         <button
           onClick={() => WindowMinimise()}
-          className="w-11 flex items-center justify-center text-white/45 hover:text-white/90 hover:bg-white/[0.07] transition-colors"
+          className="w-11 flex items-center justify-center text-text-faint hover:text-text-main hover:bg-bg-hover transition-colors"
           title="Minimize"
         >
           <MinimizeIcon />
         </button>
         <button
           onClick={() => WindowToggleMaximise()}
-          className="w-11 flex items-center justify-center text-white/45 hover:text-white/90 hover:bg-white/[0.07] transition-colors"
+          className="w-11 flex items-center justify-center text-text-faint hover:text-text-main hover:bg-bg-hover transition-colors"
           title="Maximize"
         >
           <MaximizeIcon />
         </button>
         <button
           onClick={() => Quit()}
-          className="w-11 flex items-center justify-center text-white/45 hover:text-white hover:bg-[#e81123] transition-colors"
+          className="w-11 flex items-center justify-center text-text-faint hover:text-white hover:bg-win-close transition-colors"
           title="Close"
         >
           <CloseIcon />
@@ -93,10 +93,10 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
           <div
-            className="absolute left-2 top-full mt-1 z-50 w-48 rounded-lg border border-border-subtle bg-bg-sidebar shadow-xl py-1"
+            className="absolute left-2 top-full mt-1 z-50 w-48 rounded-card border border-border-subtle bg-bg-tabbar shadow-xl py-1"
             style={noDrag}
           >
-            <p className="px-3 py-2 text-xs text-white/30">Nothing here yet</p>
+            <p className="px-3 py-2 text-xs text-text-faint">Nothing here yet</p>
           </div>
         </>
       )}

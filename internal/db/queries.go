@@ -74,12 +74,20 @@ func (db *DB) SetCustomName(id, name string) error {
 	return err
 }
 
+func (db *DB) DeleteSession(id string) error {
+	_, err := db.Exec(`DELETE FROM sessions WHERE id = ?`, id)
+	return err
+}
+
 func (db *DB) ToggleFavorite(id string) error {
 	_, err := db.Exec(`UPDATE sessions SET is_favorite = NOT is_favorite WHERE id = ?`, id)
 	return err
 }
 
-func scanSessions(rows interface{ Next() bool; Scan(...any) error }) ([]model.Session, error) {
+func scanSessions(rows interface {
+	Next() bool
+	Scan(...any) error
+}) ([]model.Session, error) {
 	var sessions []model.Session
 	for rows.Next() {
 		var s model.Session

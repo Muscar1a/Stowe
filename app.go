@@ -154,6 +154,14 @@ func (a *App) RenameSession(sessionID, name string) error {
 	return nil
 }
 
+func (a *App) DeleteSession(sessionID string) error {
+	if err := a.registry.DeleteSession(sessionID); err != nil {
+		return err
+	}
+	runtime.EventsEmit(a.ctx, "session:deleted", sessionID)
+	return nil
+}
+
 func (a *App) ToggleFavorite(sessionID string) error {
 	if err := a.registry.ToggleFavorite(sessionID); err != nil {
 		return err

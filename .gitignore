@@ -6,6 +6,7 @@ session-handoff.md
 .gemini/
 .agents/
 skills-lock.json
+.hallmark/
 *.log
 
 # Frontend (Node / Vite)
