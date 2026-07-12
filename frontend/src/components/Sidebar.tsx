@@ -2,12 +2,10 @@ import { useState } from 'react'
 import type { RepoGroup, Session } from '../hooks/useSessions'
 import type { AppMode } from '../App'
 import { SessionCard } from './SessionCard'
-import { useTheme, THEMES } from '../theme'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
-  GearIcon,
   HistoryIcon,
   ListIcon,
   PlusIcon,
@@ -46,10 +44,6 @@ export function Sidebar({
   // Projects start collapsed — their session history only loads in once clicked open.
   const [collapsedRepos, setCollapsedRepos] = useState<Record<string, boolean>>({})
   const [expandedHistory, setExpandedHistory] = useState<Record<string, boolean>>({})
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [themeHovered, setThemeHovered] = useState(false)
-  const { activeTheme, setTheme } = useTheme()
-
   const HISTORY_PAGE_SIZE = 5
 
   function toggleRepo(gitRoot: string) {
@@ -276,70 +270,6 @@ export function Sidebar({
       </>
       )}
 
-      {/* Settings Footer */}
-      <div className="p-3 border-t border-border-subtle mt-auto relative">
-        <button
-          onClick={() => setSettingsOpen(open => !open)}
-          className={`flex items-center gap-2.5 px-3 py-2 rounded-control text-sm transition-colors w-full ${
-            settingsOpen ? 'bg-bg-active text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
-          }`}
-        >
-          <GearIcon className="shrink-0 opacity-70" />
-          <span>Settings</span>
-        </button>
-
-        {settingsOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => { setSettingsOpen(false); setThemeHovered(false) }} />
-            <div className="absolute left-3 bottom-full mb-2 z-50 w-52 rounded-card border border-border-subtle bg-bg-tabbar shadow-2xl py-1.5 text-xs text-text-muted select-none">
-              <div
-                className="relative px-3 py-2 flex items-center justify-between hover:bg-bg-hover hover:text-text-main cursor-pointer transition-colors"
-                onMouseEnter={() => setThemeHovered(true)}
-                onMouseLeave={() => setThemeHovered(false)}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-accent-primary shrink-0" />
-                  <span>Theme</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-text-faint">
-                  <span className="text-[11px] truncate max-w-[80px] text-accent-primary">{activeTheme.name}</span>
-                  <ChevronRightIcon size={11} />
-                </div>
-
-                {/* Submenu for themes */}
-                {themeHovered && (
-                  <div className="absolute left-full bottom-0 ml-1 z-50 w-48 rounded-card border border-border-subtle bg-bg-tabbar shadow-2xl py-1.5 overflow-hidden">
-                    <p className="px-3 py-1 font-mono text-[10px] font-semibold text-text-faint uppercase tracking-wider">Select Theme</p>
-                    <div className="h-px bg-border-subtle my-1" />
-                    <div className="max-h-60 overflow-y-auto">
-                      {THEMES.map(t => {
-                        const isAct = activeTheme.id === t.id
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setTheme(t.id)
-                              setSettingsOpen(false)
-                              setThemeHovered(false)
-                            }}
-                            className={`w-full px-3 py-1.5 flex items-center justify-between text-left hover:bg-bg-hover transition-colors ${
-                              isAct ? 'text-accent-primary font-medium' : 'text-text-muted hover:text-text-main'
-                            }`}
-                          >
-                            <span className="truncate">{t.name}</span>
-                            {isAct && <span className="text-accent-primary shrink-0 ml-2">✓</span>}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
     </div>
   )
 }

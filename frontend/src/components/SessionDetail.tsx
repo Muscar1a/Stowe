@@ -1,4 +1,6 @@
-import { ToggleFavorite } from '../../wailsjs/go/main/App'
+import { useEffect, useState } from 'react'
+import { ToggleFavorite, GetSessionEditedFiles } from '../../wailsjs/go/main/App'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
 import { sessionTitle } from '../hooks/useSessions'
 import { useSessionRename } from '../hooks/useSessionRename'
 import type { ReactNode } from 'react'
@@ -9,6 +11,7 @@ import { Starburst } from './Starburst'
 import {
   ArrowRightIcon,
   BranchIcon,
+  FileIcon,
   FolderIcon,
   HexIcon,
   MessageIcon,
@@ -17,6 +20,21 @@ import {
   StarIcon,
   XIcon,
 } from './icons'
+
+function useEditedFiles(sessionID: string | null): string[] {
+  const [files, setFiles] = useState<string[]>([])
+  useEffect(() => {
+    if (!sessionID) { setFiles([]); return }
+    GetSessionEditedFiles(sessionID).then(r => setFiles(r ?? []))
+    const off = EventsOn('session:updated', (s: any) => {
+      if (s?.id === sessionID) {
+        GetSessionEditedFiles(sessionID).then(r => setFiles(r ?? []))
+      }
+    })
+    return off
+  }, [sessionID])
+  return files
+}
 
 interface Props {
   session: Session | null
@@ -31,6 +49,17 @@ interface Props {
 
 export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showHome, onSelectTab, onCloseTab, onNewChat }: Props) {
   const { editing, draftName, setDraftName, inputRef, startRename, commitRename, cancelRename } = useSessionRename(session)
+  const editedFiles = useEditedFiles(session?.id ?? null)
+  const [filesPanelOpen, setFilesPanelOpen] = useState(false)
+  useEffect(() => {
+    // Close panel on session change; re-open handled by hasFiles effect
+    setFilesPanelOpen(false)
+  }, [session?.id])
+
+  const hasFiles = editedFiles.length > 0
+  useEffect(() => {
+    if (hasFiles) setFilesPanelOpen(true)
+  }, [hasFiles])
 
   if (tabs.length === 0 || showHome) {
     return <NewSessionPage onNewChat={onNewChat} />
@@ -131,26 +160,97 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showH
           {session?.messageCount != null && (
             <span className="flex items-center gap-1"><MessageIcon size={11} />{session.messageCount}</span>
           )}
+          <button
+            onClick={() => setFilesPanelOpen(p => !p)}
+            className={`flex items-center gap-1 transition-colors ${filesPanelOpen ? 'text-accent-primary' : 'hover:text-text-main'}`}
+            title="Changed files"
+          >
+            <FileIcon size={11} />
+            {editedFiles.length > 0 && (
+              <span>{editedFiles.length}</span>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Terminal area — all tabs mounted, only active one visible */}
-      <div className="flex-1 relative overflow-hidden">
-        {tabs.map(tab => (
-          <div
-            key={tab.ptyID}
-            className={`absolute inset-0 ${tab.ptyID === activeTabPtyId ? '' : 'invisible pointer-events-none'}`}
-          >
-            <TerminalPane
-              ptyID={tab.ptyID}
-              title={tab.title}
-              onClose={() => onCloseTab(tab.ptyID)}
-              hideHeader
-            />
-          </div>
-        ))}
+      {/* Terminal area + files panel */}
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 relative overflow-hidden">
+          {tabs.map(tab => (
+            <div
+              key={tab.ptyID}
+              className={`absolute inset-0 ${tab.ptyID === activeTabPtyId ? '' : 'invisible pointer-events-none'}`}
+            >
+              <TerminalPane
+                ptyID={tab.ptyID}
+                title={tab.title}
+                onClose={() => onCloseTab(tab.ptyID)}
+                hideHeader
+              />
+            </div>
+          ))}
+        </div>
+
+        {filesPanelOpen && (
+          <FilesPanel
+            files={editedFiles}
+            gitRoot={session?.gitRoot ?? ''}
+            onClose={() => setFilesPanelOpen(false)}
+          />
+        )}
       </div>
 
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Changed files panel
+// ---------------------------------------------------------------------------
+
+function relPath(full: string, gitRoot: string): string {
+  const norm = (p: string) => p.replace(/\\/g, '/')
+  const n = norm(full), r = norm(gitRoot)
+  return n.startsWith(r + '/') ? n.slice(r.length + 1) : n.split('/').pop() ?? full
+}
+
+function FilesPanel({ files, gitRoot, onClose }: { files: string[]; gitRoot: string; onClose: () => void }) {
+  return (
+    <div className="w-56 shrink-0 border-l border-border-subtle bg-bg-sidebar flex flex-col">
+      <div className="h-9 px-3 flex items-center justify-between shrink-0 border-b border-border-subtle">
+        <span className="text-xs font-semibold text-text-muted">Changed Files</span>
+        <button
+          onClick={onClose}
+          className="text-text-faint hover:text-text-main transition-colors"
+          title="Close"
+        >
+          <XIcon size={12} />
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto py-1">
+        {files.length === 0 ? (
+          <p className="px-3 py-4 text-xs text-text-faint text-center">No files changed yet</p>
+        ) : (
+          files.map(f => {
+            const rel = relPath(f, gitRoot)
+            const name = rel.split('/').pop() ?? rel
+            const dir = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : ''
+            return (
+              <div
+                key={f}
+                className="flex items-start gap-2 px-3 py-1.5 hover:bg-bg-hover transition-colors"
+                title={f}
+              >
+                <FileIcon size={11} className="text-accent-primary shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-text-main truncate">{name}</p>
+                  {dir && <p className="text-[10px] text-text-faint truncate">{dir}</p>}
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
     </div>
   )
 }

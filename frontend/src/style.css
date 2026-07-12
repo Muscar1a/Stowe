@@ -1,41 +1,7 @@
-/* Hallmark · genre: modern-minimal · macrostructure: Workbench (app shell) · tone: technical · design-system: design.md · designed-as-app */
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench (app shell) · tone: technical · theme: dracula */
 @import "tailwindcss";
 
 :root {
-  --bg-main: #090b10;
-  --bg-sidebar: #0c0e14;
-  --bg-tabbar: #0a0c12;
-  --bg-terminal: #0d1117;
-  --border-color: rgba(255, 255, 255, 0.06);
-  --accent-color: #3b82f6;
-  --accent-bg: rgba(59, 130, 246, 0.1);
-  --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.6);
-}
-
-/* Universal tokens — all 6 themes are dark, so white-alpha overlays hold
-   everywhere. Not overridden by [data-theme] blocks. See design.md. */
-:root {
-  --bg-raised: rgba(255, 255, 255, 0.03);
-  --bg-hover: rgba(255, 255, 255, 0.06);
-  --bg-active: rgba(255, 255, 255, 0.09);
-  --text-faint: rgba(255, 255, 255, 0.35);
-  --win-close: #e81123; /* Windows close-button convention */
-}
-
-[data-theme="catppuccin-mocha"] {
-  --bg-main: #1e1e2e;
-  --bg-sidebar: #181825;
-  --bg-tabbar: #11111b;
-  --bg-terminal: #11111b;
-  --border-color: rgba(203, 166, 247, 0.1);
-  --accent-color: #cba6f7;
-  --accent-bg: rgba(203, 166, 247, 0.15);
-  --text-main: #cdd6f4;
-  --text-muted: #a6adc8;
-}
-
-[data-theme="dracula"] {
   --bg-main: #282a36;
   --bg-sidebar: #21222c;
   --bg-tabbar: #1e1f29;
@@ -45,42 +11,12 @@
   --accent-bg: rgba(189, 147, 249, 0.15);
   --text-main: #f8f8f2;
   --text-muted: #6272a4;
-}
 
-[data-theme="tokyo-night"] {
-  --bg-main: #1a1b26;
-  --bg-sidebar: #16161e;
-  --bg-tabbar: #1f2335;
-  --bg-terminal: #1a1b26;
-  --border-color: rgba(122, 162, 247, 0.1);
-  --accent-color: #7aa2f7;
-  --accent-bg: rgba(122, 162, 247, 0.15);
-  --text-main: #a9b1d6;
-  --text-muted: #565f89;
-}
-
-[data-theme="nord"] {
-  --bg-main: #2e3440;
-  --bg-sidebar: #242933;
-  --bg-tabbar: #2e3440;
-  --bg-terminal: #2e3440;
-  --border-color: rgba(136, 192, 208, 0.1);
-  --accent-color: #88c0d0;
-  --accent-bg: rgba(136, 192, 208, 0.15);
-  --text-main: #eceff4;
-  --text-muted: #d8dee9;
-}
-
-[data-theme="github-dark"] {
-  --bg-main: #0d1117;
-  --bg-sidebar: #010409;
-  --bg-tabbar: #161b22;
-  --bg-terminal: #0d1117;
-  --border-color: rgba(47, 129, 247, 0.1);
-  --accent-color: #2f81f7;
-  --accent-bg: rgba(47, 129, 247, 0.15);
-  --text-main: #c9d1d9;
-  --text-muted: #8b949e;
+  --bg-raised: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.09);
+  --text-faint: rgba(255, 255, 255, 0.35);
+  --win-close: #e81123;
 }
 
 @theme {
@@ -118,16 +54,13 @@ html, body, #root {
   color: var(--text-main);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Focus ring — instant, never animated, themed via accent */
 :focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 1px;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -142,4 +75,3 @@ html, body, #root {
   background: var(--accent-color);
   opacity: 0.5;
 }
-

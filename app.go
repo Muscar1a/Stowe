@@ -121,6 +121,15 @@ func (a *App) ResumeSession(sessionID string) (string, error) {
 	return a.ptyMgr.Start(a.ctx, binary, args, dir)
 }
 
+func (a *App) GetSessionEditedFiles(sessionID string) []string {
+	s := a.registry.GetSession(sessionID)
+	if s == nil {
+		return nil
+	}
+	files, _ := a.ccAdapter.ParseEditedFiles(s.FilePath)
+	return files
+}
+
 func (a *App) GetSessionMessages(sessionID string) []model.Message {
 	s := a.registry.GetSession(sessionID)
 	if s == nil {

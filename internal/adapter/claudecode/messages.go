@@ -28,6 +28,60 @@ type contentBlock struct {
 	Text string `json:"text"`
 }
 
+func (a *Adapter) ParseEditedFiles(filePath string) ([]string, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	type toolInput struct {
+		FilePath string `json:"file_path"`
+	}
+	type toolBlock struct {
+		Type  string    `json:"type"`
+		Name  string    `json:"name"`
+		Input toolInput `json:"input"`
+	}
+
+	seen := make(map[string]bool)
+	var files []string
+
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
+
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+		var rec jsonRecord
+		if err := json.Unmarshal(line, &rec); err != nil {
+			continue
+		}
+		if rec.Type != "assistant" || rec.IsMeta || rec.IsSidechain || rec.Message == nil {
+			continue
+		}
+		var blocks []toolBlock
+		if err := json.Unmarshal(rec.Message.Content, &blocks); err != nil {
+			continue
+		}
+		for _, b := range blocks {
+			if b.Type != "tool_use" {
+				continue
+			}
+			switch b.Name {
+			case "Write", "Edit", "MultiEdit", "NotebookEdit":
+				if p := b.Input.FilePath; p != "" && !seen[p] {
+					seen[p] = true
+					files = append(files, p)
+				}
+			}
+		}
+	}
+	return files, scanner.Err()
+}
+
 func (a *Adapter) ParseMessages(filePath string) ([]model.Message, error) {
 	f, err := os.Open(filePath)
 	if err != nil {

@@ -118,6 +118,15 @@ export function HexIcon(p: IconProps) {
   return <Icon {...p}><path d="M8 1.8 13.4 5v6L8 14.2 2.6 11V5L8 1.8Z" /></Icon>
 }
 
+export function FileIcon(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <path d="M4 2h6l3.5 3.5V14H4V2Z" />
+      <path d="M10 2v3.5H13.5" />
+    </Icon>
+  )
+}
+
 export function SparkIcon(p: IconProps) {
   return (
     <Icon {...p} fill="currentColor" stroke="none">
