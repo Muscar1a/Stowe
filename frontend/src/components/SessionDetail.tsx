@@ -8,10 +8,10 @@ import type { Session, RepoGroup } from '../hooks/useSessions'
 import type { TabEntry } from '../App'
 import { TerminalPane } from './TerminalPane'
 import { Starburst } from './Starburst'
+import { InspectorPanel } from './InspectorPanel'
 import {
   ArrowRightIcon,
   BranchIcon,
-  FileIcon,
   FolderIcon,
   HexIcon,
   MessageIcon,
@@ -50,16 +50,7 @@ interface Props {
 export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showHome, onSelectTab, onCloseTab, onNewChat }: Props) {
   const { editing, draftName, setDraftName, inputRef, startRename, commitRename, cancelRename } = useSessionRename(session)
   const editedFiles = useEditedFiles(session?.id ?? null)
-  const [filesPanelOpen, setFilesPanelOpen] = useState(false)
-  useEffect(() => {
-    // Close panel on session change; re-open handled by hasFiles effect
-    setFilesPanelOpen(false)
-  }, [session?.id])
-
-  const hasFiles = editedFiles.length > 0
-  useEffect(() => {
-    if (hasFiles) setFilesPanelOpen(true)
-  }, [hasFiles])
+  const [inspectorOpen, setInspectorOpen] = useState(true)
 
   if (tabs.length === 0 || showHome) {
     return <NewSessionPage onNewChat={onNewChat} />
@@ -73,184 +64,97 @@ export function SessionDetail({ session, repoGroups, tabs, activeTabPtyId, showH
     : (tabs.find(t => t.ptyID === activeTabPtyId)?.title ?? 'Terminal')
 
   return (
-    <div className="flex-1 flex flex-col bg-bg-main overflow-hidden text-white min-w-0">
+    <div className="flex-1 flex flex-col bg-bg-main overflow-hidden text-text-main min-w-0">
 
-      {/* Tab bar */}
-      <div className="flex items-stretch bg-bg-tabbar border-b border-border-subtle overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
-        {tabs.map(tab => {
-          const tabSession = allSessions.find(s => s.id === tab.sessionID)
-          const tabTitle = tabSession ? sessionTitle(tabSession) : tab.title
-          const isActive = tab.ptyID === activeTabPtyId
+      {/* Top Header: Integrated Tab bar & Workspace Control */}
+      <div className="flex items-center justify-between bg-bg-tabbar border-b border-border-subtle shrink-0">
+        {/* Tab strip */}
+        <div className="flex items-stretch overflow-x-auto min-w-0" style={{ scrollbarWidth: 'none' }}>
+          {tabs.map(tab => {
+            const tabSession = allSessions.find(s => s.id === tab.sessionID)
+            const tabTitle = tabSession ? sessionTitle(tabSession) : tab.title
+            const isActive = tab.ptyID === activeTabPtyId
 
-          return (
-            <div
-              key={tab.ptyID}
-              onClick={() => onSelectTab(tab.ptyID)}
-              className={`group flex items-center gap-2 px-3 py-2 text-xs cursor-pointer shrink-0 border-r border-border-subtle select-none max-w-[180px] transition-colors ${
-                isActive
-                  ? 'bg-bg-main text-white/90 border-t-[1.5px] border-t-accent-primary'
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03] border-t-[1.5px] border-t-transparent'
-              }`}
-            >
-              <span className="font-mono text-[10px] text-text-faint shrink-0">&gt;_</span>
-              <span className="truncate flex-1">{tabTitle}</span>
-              <button
-                onClick={e => { e.stopPropagation(); onCloseTab(tab.ptyID) }}
-                className="shrink-0 w-4 h-4 flex items-center justify-center rounded-chip text-text-faint hover:text-text-main hover:bg-bg-active opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
-                title="Close"
+            return (
+              <div
+                key={tab.ptyID}
+                onClick={() => onSelectTab(tab.ptyID)}
+                className={`group flex items-center gap-2 px-3.5 py-2 text-xs cursor-pointer shrink-0 border-r border-border-subtle select-none max-w-[200px] transition-colors ${
+                  isActive
+                    ? 'bg-bg-main text-text-main font-medium border-t-[2px] border-t-accent-primary'
+                    : 'text-text-faint hover:text-text-muted hover:bg-bg-hover border-t-[2px] border-t-transparent'
+                }`}
               >
-                <XIcon size={10} />
-              </button>
-            </div>
-          )
-        })}
-      </div>
+                <span className="font-mono text-[10px] text-text-faint shrink-0">&gt;_</span>
+                <span className="truncate flex-1">{tabTitle}</span>
+                <button
+                  onClick={e => { e.stopPropagation(); onCloseTab(tab.ptyID) }}
+                  className="shrink-0 w-4 h-4 flex items-center justify-center rounded-chip text-text-faint hover:text-text-main hover:bg-bg-active opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
+                  title="Close Tab"
+                >
+                  <XIcon size={10} />
+                </button>
+              </div>
+            )
+          })}
+        </div>
 
-      {/* Thin session info bar */}
-      <div className="h-9 border-b border-border-subtle px-4 flex items-center gap-2 text-xs text-text-muted shrink-0">
-        {repoName && (
-          <span className="flex items-center gap-1.5 text-text-faint shrink-0">
-            <FolderIcon size={12} />
-            {repoName}
-          </span>
-        )}
-        {repoName && <span className="text-text-faint">/</span>}
-
-        {editing ? (
-          <input
-            ref={inputRef}
-            className="bg-bg-active text-text-main text-xs rounded-chip px-1.5 py-0.5 outline-none border border-accent-primary min-w-0"
-            value={draftName}
-            onChange={e => setDraftName(e.target.value)}
-            onBlur={commitRename}
-            onKeyDown={e => {
-              if (e.key === 'Enter') commitRename()
-              if (e.key === 'Escape') cancelRename()
-            }}
-          />
-        ) : (
-          <span
-            className="text-text-main font-medium truncate cursor-pointer transition-colors"
-            onDoubleClick={startRename}
-            title="Double-click to rename"
-          >
-            {displayTitle}
-          </span>
-        )}
-
-        {session && (
-          <>
-            <button
-              onClick={startRename}
-              className="text-text-faint hover:text-text-main transition-colors shrink-0"
-              title="Rename"
-            ><PencilIcon size={12} /></button>
-            <button
-              onClick={() => ToggleFavorite(session.id)}
-              className={`transition-colors shrink-0 ${session.isFavorite ? 'text-accent-primary' : 'text-text-faint hover:text-text-main'}`}
-              title={session.isFavorite ? 'Remove favorite' : 'Add favorite'}
-            ><StarIcon size={12} filled={session.isFavorite} /></button>
-          </>
-        )}
-
-        <div className="ml-auto flex items-center gap-3 font-mono text-[11px] text-text-faint shrink-0">
+        {/* Header Right Action Bar */}
+        <div className="flex items-center gap-3 px-3 shrink-0 font-mono text-[11px] text-text-faint">
           {session?.gitBranch && (
-            <span className="flex items-center gap-1"><BranchIcon size={11} />{session.gitBranch}</span>
-          )}
-          {session?.messageCount != null && (
-            <span className="flex items-center gap-1"><MessageIcon size={11} />{session.messageCount}</span>
+            <span className="flex items-center gap-1">
+              <BranchIcon size={11} />
+              <span>{session.gitBranch}</span>
+            </span>
           )}
           <button
-            onClick={() => setFilesPanelOpen(p => !p)}
-            className={`flex items-center gap-1 transition-colors ${filesPanelOpen ? 'text-accent-primary' : 'hover:text-text-main'}`}
-            title="Changed files"
+            onClick={() => setInspectorOpen(p => !p)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-control text-xs transition-colors border ${
+              inspectorOpen
+                ? 'bg-bg-raised border-border-subtle text-text-main font-medium'
+                : 'border-transparent text-text-faint hover:text-text-main hover:bg-bg-hover'
+            }`}
+            title="Toggle Right Inspector"
           >
-            <FileIcon size={11} />
-            {editedFiles.length > 0 && (
-              <span>{editedFiles.length}</span>
-            )}
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
+            <span className="font-sans">Inspector</span>
           </button>
         </div>
       </div>
 
-      {/* Terminal area + files panel */}
+      {/* Main Studio Content Area (Center Terminal + Right Inspector) */}
       <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 relative overflow-hidden">
-          {tabs.map(tab => (
-            <div
-              key={tab.ptyID}
-              className={`absolute inset-0 ${tab.ptyID === activeTabPtyId ? '' : 'invisible pointer-events-none'}`}
-            >
-              <TerminalPane
-                ptyID={tab.ptyID}
-                title={tab.title}
-                onClose={() => onCloseTab(tab.ptyID)}
-                hideHeader
-              />
-            </div>
-          ))}
+        {/* Terminal & Bottom Graph Area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className="flex-1 relative overflow-hidden bg-bg-terminal">
+            {tabs.map(tab => (
+              <div
+                key={tab.ptyID}
+                className={`absolute inset-0 ${tab.ptyID === activeTabPtyId ? '' : 'invisible pointer-events-none'}`}
+              >
+                <TerminalPane
+                  ptyID={tab.ptyID}
+                  title={tab.title}
+                  onClose={() => onCloseTab(tab.ptyID)}
+                  hideHeader
+                />
+              </div>
+            ))}
+          </div>
+
         </div>
 
-        {filesPanelOpen && (
-          <FilesPanel
-            files={editedFiles}
-            gitRoot={session?.gitRoot ?? ''}
-            onClose={() => setFilesPanelOpen(false)}
+        {/* Option B: Right Inspector Sidebar */}
+        {inspectorOpen && (
+          <InspectorPanel
+            session={session}
+            repoGroups={repoGroups}
+            editedFiles={editedFiles}
+            onClose={() => setInspectorOpen(false)}
           />
         )}
       </div>
 
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Changed files panel
-// ---------------------------------------------------------------------------
-
-function relPath(full: string, gitRoot: string): string {
-  const norm = (p: string) => p.replace(/\\/g, '/')
-  const n = norm(full), r = norm(gitRoot)
-  return n.startsWith(r + '/') ? n.slice(r.length + 1) : n.split('/').pop() ?? full
-}
-
-function FilesPanel({ files, gitRoot, onClose }: { files: string[]; gitRoot: string; onClose: () => void }) {
-  return (
-    <div className="w-56 shrink-0 border-l border-border-subtle bg-bg-sidebar flex flex-col">
-      <div className="h-9 px-3 flex items-center justify-between shrink-0 border-b border-border-subtle">
-        <span className="text-xs font-semibold text-text-muted">Changed Files</span>
-        <button
-          onClick={onClose}
-          className="text-text-faint hover:text-text-main transition-colors"
-          title="Close"
-        >
-          <XIcon size={12} />
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto py-1">
-        {files.length === 0 ? (
-          <p className="px-3 py-4 text-xs text-text-faint text-center">No files changed yet</p>
-        ) : (
-          files.map(f => {
-            const rel = relPath(f, gitRoot)
-            const name = rel.split('/').pop() ?? rel
-            const dir = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : ''
-            return (
-              <div
-                key={f}
-                className="flex items-start gap-2 px-3 py-1.5 hover:bg-bg-hover transition-colors"
-                title={f}
-              >
-                <FileIcon size={11} className="text-accent-primary shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <p className="text-xs text-text-main truncate">{name}</p>
-                  {dir && <p className="text-[10px] text-text-faint truncate">{dir}</p>}
-                </div>
-              </div>
-            )
-          })
-        )}
-      </div>
     </div>
   )
 }

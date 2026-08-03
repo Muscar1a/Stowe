@@ -13,6 +13,7 @@ type OnChangeFunc func(filePath string, isNew bool)
 type Watcher struct {
 	w        *fsnotify.Watcher
 	onChange OnChangeFunc
+	filter   func(string) bool
 	debounce map[string]*time.Timer
 	mu       sync.Mutex
 }
@@ -22,6 +23,11 @@ func New(onChange OnChangeFunc) *Watcher {
 		onChange: onChange,
 		debounce: make(map[string]*time.Timer),
 	}
+}
+
+func (w *Watcher) WithFilter(f func(string) bool) *Watcher {
+	w.filter = f
+	return w
 }
 
 func (w *Watcher) Start(dirs []string) error {
@@ -54,9 +60,14 @@ func (w *Watcher) run() {
 			if !ok {
 				return
 			}
-			if filepath.Ext(event.Name) != ".jsonl" {
+			if w.filter != nil {
+				if !w.filter(event.Name) {
+					continue
+				}
+			} else if filepath.Ext(event.Name) != ".jsonl" {
 				continue
 			}
+
 			if event.Op&(fsnotify.Create|fsnotify.Write) == 0 {
 				continue
 			}

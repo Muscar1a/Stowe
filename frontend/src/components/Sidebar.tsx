@@ -65,7 +65,7 @@ export function Sidebar({
   const allSessions = repoGroups.flatMap(g => g.sessions)
 
   return (
-    <div className="flex flex-col h-full w-80 shrink-0 bg-bg-sidebar border-r border-border-subtle select-none text-text-main">
+    <div className="flex flex-col h-full w-[240px] shrink-0 bg-bg-sidebar border-r border-border-subtle select-none text-text-main">
       {/* Section switcher: API Chat (upcoming) | Code CLI */}
       {SHOW_API_CHAT && (
       <div className="px-3 pt-3 pb-1">
@@ -108,36 +108,52 @@ export function Sidebar({
       </div>
 
       {/* Navigation Tabs */}
-      <div className="px-2 py-1 space-y-0.5 text-sm">
+      <div className="px-2 py-1 space-y-0.5">
         <button
-          onClick={() => setViewMode('history')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-control transition-colors ${
-            viewMode === 'history' && !searchQuery ? 'bg-bg-hover text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
+          onClick={() => { setViewMode('history'); onSelectMode('code') }}
+          className={`relative w-full flex items-center gap-2.5 px-3 py-1.5 rounded-control text-sm transition-colors ${
+            viewMode === 'history' && mode === 'code' && !searchQuery
+              ? 'bg-bg-raised text-text-main font-medium'
+              : 'text-text-faint hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <HistoryIcon className="shrink-0 opacity-70" />
+          {(viewMode === 'history' && mode === 'code' && !searchQuery) && (
+            <span className="absolute left-0 inset-y-1.5 w-0.5 bg-accent-primary rounded-r-full" />
+          )}
+          <HistoryIcon className="shrink-0" />
           <span>Session History</span>
         </button>
 
         <button
-          onClick={() => setViewMode('favorites')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-control transition-colors ${
-            viewMode === 'favorites' ? 'bg-bg-hover text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
+          onClick={() => { setViewMode('favorites'); onSelectMode('code') }}
+          className={`relative w-full flex items-center gap-2.5 px-3 py-1.5 rounded-control text-sm transition-colors ${
+            viewMode === 'favorites' && mode === 'code'
+              ? 'bg-bg-raised text-text-main font-medium'
+              : 'text-text-faint hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <StarIcon className="shrink-0 opacity-70" />
+          {viewMode === 'favorites' && mode === 'code' && (
+            <span className="absolute left-0 inset-y-1.5 w-0.5 bg-accent-primary rounded-r-full" />
+          )}
+          <StarIcon className="shrink-0" />
           <span>Favorites</span>
         </button>
 
         <button
-          onClick={() => setViewMode('all')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-control transition-colors ${
-            viewMode === 'all' ? 'bg-bg-hover text-text-main font-medium' : 'text-text-muted hover:text-text-main hover:bg-bg-raised'
+          onClick={() => { setViewMode('all'); onSelectMode('code') }}
+          className={`relative w-full flex items-center gap-2.5 px-3 py-1.5 rounded-control text-sm transition-colors ${
+            viewMode === 'all' && mode === 'code'
+              ? 'bg-bg-raised text-text-main font-medium'
+              : 'text-text-faint hover:text-text-main hover:bg-bg-raised'
           }`}
         >
-          <ListIcon className="shrink-0 opacity-70" />
+          {viewMode === 'all' && mode === 'code' && (
+            <span className="absolute left-0 inset-y-1.5 w-0.5 bg-accent-primary rounded-r-full" />
+          )}
+          <ListIcon className="shrink-0" />
           <span>Conversation History</span>
         </button>
+
 
       </div>
 

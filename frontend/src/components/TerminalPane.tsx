@@ -37,7 +37,7 @@ export function TerminalPane({ ptyID, title, onClose, hideHeader }: Props) {
       {/* xterm container */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-hidden p-2"
+        className="flex-1 overflow-hidden"
       />
     </div>
   )

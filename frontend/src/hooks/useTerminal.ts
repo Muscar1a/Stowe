@@ -14,7 +14,6 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
   const [exited, setExited] = useState(false)
   const { activeTheme } = useTheme()
 
-  // Use a ref for theme so we can read it on mount without recreating the terminal session
   const themeRef = useRef(activeTheme)
   themeRef.current = activeTheme
 
@@ -23,14 +22,36 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
 
     const term = new Terminal({
       cursorBlink: true,
-      fontSize: 14,
-      fontFamily: 'Cascadia Code, Consolas, monospace',
+      cursorStyle: 'block',
+      fontSize: 13.5,
+      lineHeight: 1.35,
+      letterSpacing: 0.3,
+      fontFamily: '"Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, ui-monospace, monospace',
       theme: {
         background: themeRef.current.terminalBg,
         foreground: themeRef.current.terminalFg,
         cursor: themeRef.current.terminalCursor,
+        cursorAccent: themeRef.current.terminalCursorAccent,
+        selectionBackground: themeRef.current.terminalSelection,
+        black: themeRef.current.black,
+        red: themeRef.current.red,
+        green: themeRef.current.green,
+        yellow: themeRef.current.yellow,
+        blue: themeRef.current.blue,
+        magenta: themeRef.current.magenta,
+        cyan: themeRef.current.cyan,
+        white: themeRef.current.white,
+        brightBlack: themeRef.current.brightBlack,
+        brightRed: themeRef.current.brightRed,
+        brightGreen: themeRef.current.brightGreen,
+        brightYellow: themeRef.current.brightYellow,
+        brightBlue: themeRef.current.brightBlue,
+        brightMagenta: themeRef.current.brightMagenta,
+        brightCyan: themeRef.current.brightCyan,
+        brightWhite: themeRef.current.brightWhite,
       },
     })
+
     const fit = new FitAddon()
     term.loadAddon(fit)
     term.open(containerRef.current)
@@ -72,10 +93,27 @@ export function useTerminal(containerRef: React.RefObject<HTMLDivElement | null>
         background: activeTheme.terminalBg,
         foreground: activeTheme.terminalFg,
         cursor: activeTheme.terminalCursor,
+        cursorAccent: activeTheme.terminalCursorAccent,
+        selectionBackground: activeTheme.terminalSelection,
+        black: activeTheme.black,
+        red: activeTheme.red,
+        green: activeTheme.green,
+        yellow: activeTheme.yellow,
+        blue: activeTheme.blue,
+        magenta: activeTheme.magenta,
+        cyan: activeTheme.cyan,
+        white: activeTheme.white,
+        brightBlack: activeTheme.brightBlack,
+        brightRed: activeTheme.brightRed,
+        brightGreen: activeTheme.brightGreen,
+        brightYellow: activeTheme.brightYellow,
+        brightBlue: activeTheme.brightBlue,
+        brightMagenta: activeTheme.brightMagenta,
+        brightCyan: activeTheme.brightCyan,
+        brightWhite: activeTheme.brightWhite,
       }
     }
   }, [activeTheme])
 
   return { exited }
 }
-

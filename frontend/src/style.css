@@ -1,22 +1,31 @@
-/* Hallmark · genre: modern-minimal · macrostructure: Workbench (app shell) · tone: technical · theme: dracula */
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench (app shell) · tone: precision · theme: chalk
+ * paper-band: light · accent-hue: amber (55°) · display: system-sans */
 @import "tailwindcss";
 
 :root {
-  --bg-main: #282a36;
-  --bg-sidebar: #21222c;
-  --bg-tabbar: #1e1f29;
-  --bg-terminal: #282a36;
-  --border-color: rgba(189, 147, 249, 0.1);
-  --accent-color: #bd93f9;
-  --accent-bg: rgba(189, 147, 249, 0.15);
-  --text-main: #f8f8f2;
-  --text-muted: #6272a4;
+  /* Chalk — 5 light stops, amber accent, terminal stays dark */
+  --bg-tabbar:   oklch(91%  0.008 75);   /* chrome / title bar */
+  --bg-sidebar:  oklch(96%  0.006 80);   /* sidebar panel */
+  --bg-main:     oklch(99%  0.003 85);   /* content area */
+  --bg-terminal: oklch(12%  0.015 280);  /* terminal — always dark */
+  --bg-raised:   oklch(100% 0     0);    /* cards / inputs */
+  --bg-hover:    oklch(95%  0.007 80);   /* hover state */
+  --bg-active:   oklch(92%  0.008 75);   /* active / selected */
 
-  --bg-raised: rgba(255, 255, 255, 0.03);
-  --bg-hover: rgba(255, 255, 255, 0.06);
-  --bg-active: rgba(255, 255, 255, 0.09);
-  --text-faint: rgba(255, 255, 255, 0.35);
-  --win-close: #e81123;
+  /* Text */
+  --text-main:  oklch(12%  0.015 280);
+  --text-muted: oklch(46%  0.02  280);
+  --text-faint: oklch(65%  0.012 280);
+
+  /* Accent — amber/gold */
+  --accent-color:  oklch(68%  0.18  55);
+  --accent-bg:     oklch(68%  0.18  55 / 0.1);
+  --accent-muted:  oklch(68%  0.18  55 / 0.5);
+
+  /* Structure */
+  --border-color: oklch(87%  0.008 280);
+
+  --win-close: oklch(56%  0.22  25);
 }
 
 @theme {
@@ -74,4 +83,19 @@ html, body, #root {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-color);
   opacity: 0.5;
+}
+
+/* Custom xterm styling overrides for modern terminal UI */
+.xterm {
+  padding: 12px 14px;
+  height: 100%;
+}
+
+.xterm .xterm-viewport {
+  background-color: transparent !important;
+  border-radius: 4px;
+}
+
+.xterm .xterm-screen {
+  padding: 2px 0;
 }

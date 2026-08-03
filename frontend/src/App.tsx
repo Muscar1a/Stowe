@@ -13,7 +13,7 @@ export interface TabEntry {
   title: string
 }
 
-/** Top-level app section: 'chat' = API-based chats (upcoming), 'code' = CLI terminals. */
+/** Top-level app section. */
 export type AppMode = 'chat' | 'code'
 
 /** A navigable screen in the main content area: the launcher page or an open tab. */
@@ -70,6 +70,7 @@ export default function App() {
   }
 
   async function handleSelectSession(session: Session) {
+    setAppMode('code')
     // Already open — just focus its tab
     const existing = tabs.find(t => t.sessionID === session.id)
     if (existing) {
@@ -86,6 +87,7 @@ export default function App() {
   }
 
   async function handleNewChat() {
+    setAppMode('code')
     try {
       const gitRoot = activeSession?.gitRoot ?? ''
       const ptyID = await LaunchNewChat(gitRoot)
@@ -101,8 +103,6 @@ export default function App() {
 
   function handleSelectMode(mode: AppMode) {
     setAppMode(mode)
-    // "Code CLI" lands on the launcher page; open terminals stay in their tabs
-    if (mode === 'code') navigateTo({ type: 'home' })
   }
 
   function handleCloseTab(ptyID: string) {
@@ -184,8 +184,8 @@ export default function App() {
         />
       </div>
       {appMode === 'chat' && <ApiChatPlaceholder />}
-      {/* Hidden (not unmounted) in chat mode so running terminals survive switching */}
-      <div className={appMode === 'chat' ? 'hidden' : 'contents'}>
+      {/* Hidden (not unmounted) so running terminals survive mode switching */}
+      <div className={appMode === 'code' ? 'contents' : 'hidden'}>
         <SessionDetail
           session={activeSession}
           repoGroups={repoGroups}

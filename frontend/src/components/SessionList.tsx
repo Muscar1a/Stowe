@@ -12,7 +12,7 @@ interface Props {
 export function SessionList({ sessions, repoGroups, selectedGitRoot, isSearching, onOpen }: Props) {
   if (sessions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-white/30 text-sm">
+      <div className="flex items-center justify-center h-full text-text-faint text-sm">
         {isSearching ? 'No results' : 'No sessions'}
       </div>
     )
@@ -34,7 +34,7 @@ export function SessionList({ sessions, repoGroups, selectedGitRoot, isSearching
     <div className="flex flex-col gap-4 p-2">
       {repoGroups.map(group => (
         <div key={group.gitRoot}>
-          <p className="text-xs text-white/30 font-medium uppercase tracking-wider px-3 mb-1">
+          <p className="text-xs text-text-faint font-medium uppercase tracking-wider px-3 mb-1">
             {group.displayName}
           </p>
           {group.sessions.map(s => (
