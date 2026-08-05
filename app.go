@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"stowe/internal/adapter"
@@ -170,6 +171,14 @@ func (a *App) DeleteSession(sessionID string) error {
 	}
 	runtime.EventsEmit(a.ctx, "session:deleted", sessionID)
 	return nil
+}
+
+func (a *App) OpenFolder(path string) error {
+	return exec.Command("explorer", path).Start()
+}
+
+func (a *App) OpenFileLocation(path string) error {
+	return exec.Command("explorer", "/select,"+filepath.FromSlash(path)).Start()
 }
 
 func (a *App) ToggleFavorite(sessionID string) error {

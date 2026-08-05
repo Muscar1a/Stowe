@@ -56,4 +56,9 @@ func (p *platformPTY) Close() error {
 	return p.cpty.Close()
 }
 
+func (p *platformPTY) wait() int {
+	code, _ := p.cpty.Wait(context.Background())
+	return int(code)
+}
+
 func (p *platformPTY) cmd() *exec.Cmd { return nil }

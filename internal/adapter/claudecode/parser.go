@@ -119,9 +119,6 @@ func parseTimestamp(rec map[string]any) time.Time {
 		if v, ok := rec[key]; ok {
 			switch s := v.(type) {
 			case string:
-				if t, err := time.Parse(time.RFC3339, s); err == nil {
-					return t
-				}
 				if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
 					return t
 				}

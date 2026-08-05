@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"encoding/json"
 	"os"
-	"strings"
 	"stowe/internal/model"
+	"strings"
 	"time"
 )
 
@@ -29,7 +29,7 @@ type contentBlock struct {
 }
 
 func (a *Adapter) ParseEditedFiles(filePath string) ([]string, error) {
-	f, err := os.Open(filePath)
+	scanner, f, err := openScanner(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -46,9 +46,6 @@ func (a *Adapter) ParseEditedFiles(filePath string) ([]string, error) {
 
 	seen := make(map[string]bool)
 	var files []string
-
-	scanner := bufio.NewScanner(f)
-	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -83,15 +80,13 @@ func (a *Adapter) ParseEditedFiles(filePath string) ([]string, error) {
 }
 
 func (a *Adapter) ParseMessages(filePath string) ([]model.Message, error) {
-	f, err := os.Open(filePath)
+	scanner, f, err := openScanner(filePath)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
 	var messages []model.Message
-	scanner := bufio.NewScanner(f)
-	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -122,8 +117,6 @@ func (a *Adapter) ParseMessages(filePath string) ([]model.Message, error) {
 		var ts time.Time
 		if rec.Timestamp != "" {
 			if t, err := time.Parse(time.RFC3339Nano, rec.Timestamp); err == nil {
-				ts = t
-			} else if t, err := time.Parse(time.RFC3339, rec.Timestamp); err == nil {
 				ts = t
 			}
 		}
@@ -163,4 +156,14 @@ func extractContent(msg *jsonMessage) string {
 	}
 
 	return ""
+}
+
+func openScanner(path string) (*bufio.Scanner, *os.File, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1<<20), 1<<20)
+	return sc, f, nil
 }

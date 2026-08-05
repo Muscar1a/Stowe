@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { ToggleFavorite } from '../../wailsjs/go/main/App'
+import { ToggleFavorite, OpenFolder } from '../../wailsjs/go/main/App'
 import { sessionTitle } from '../hooks/useSessions'
 import { useSessionRename } from '../hooks/useSessionRename'
 import type { Session, RepoGroup } from '../hooks/useSessions'
 import {
+  ArrowRightIcon,
   BranchIcon,
   FileIcon,
   FolderIcon,
@@ -87,7 +88,16 @@ export function InspectorPanel({
                 {repoName && (
                   <p className="text-[10px] text-text-faint flex items-center gap-1 truncate mt-0.5">
                     <FolderIcon size={10} className="shrink-0" />
-                    <span className="truncate">{repoName}</span>
+                    <span className="truncate flex-1">{repoName}</span>
+                    {session?.gitRoot && (
+                      <button
+                        onClick={() => OpenFolder(session.gitRoot!)}
+                        className="shrink-0 hover:text-text-main transition-colors"
+                        title="Open in Explorer"
+                      >
+                        <ArrowRightIcon size={10} />
+                      </button>
+                    )}
                   </p>
                 )}
               </div>

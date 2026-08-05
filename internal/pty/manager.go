@@ -2,7 +2,6 @@ package pty
 
 import (
 	"context"
-	"io"
 	"sync"
 
 	"github.com/google/uuid"
@@ -100,12 +99,10 @@ func (m *Manager) readLoop(s *session) {
 			m.emit("pty:data", PTYData{ID: s.id, Data: string(buf[:n])})
 		}
 		if err != nil {
-			if err != io.EOF {
-				// process exited
-			}
 			break
 		}
 	}
-	m.emit("pty:exit", PTYExit{ID: s.id, Code: 0})
+	code := s.p.wait()
+	m.emit("pty:exit", PTYExit{ID: s.id, Code: code})
 	m.Close(s.id)
 }

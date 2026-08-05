@@ -3,6 +3,8 @@ import './style.css'
 import App from './App'
 import { ThemeProvider } from './theme'
 
+document.addEventListener('contextmenu', (e) => e.preventDefault())
+
 // Suppress Vite HMR ResizeObserver benign warning
 window.addEventListener('error', (e) => {
   if (e.message?.includes('ResizeObserver loop')) {

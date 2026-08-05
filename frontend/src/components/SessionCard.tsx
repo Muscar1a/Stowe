@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { DeleteSession, ToggleFavorite } from '../../wailsjs/go/main/App'
+import { useEffect, useRef, useState } from 'react'
+import { DeleteSession, OpenFileLocation, OpenFolder, ToggleFavorite } from '../../wailsjs/go/main/App'
 import { sessionTitle } from '../hooks/useSessions'
 import { useSessionRename } from '../hooks/useSessionRename'
 import type { Session } from '../hooks/useSessions'
@@ -15,11 +15,23 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
   const { editing, draftName, setDraftName, inputRef, startRename, commitRename, cancelRename } = useSessionRename(session)
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   function closeMenu() {
     setMenuOpen(false)
     setConfirmDelete(false)
   }
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        closeMenu()
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
 
   const displayTitle = sessionTitle(session, 'Untitled Session')
   const date = session.updatedAt
@@ -104,9 +116,8 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
       </button>
 
       {menuOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); closeMenu() }} />
           <div
+            ref={menuRef}
             className="absolute right-2 top-10 z-50 w-44 rounded-card border border-border-subtle bg-bg-tabbar shadow-xl py-1"
             onClick={e => e.stopPropagation()}
           >
@@ -116,6 +127,22 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
             >
               Rename
             </button>
+            {session.cwd && (
+              <button
+                className="w-full text-left px-3 py-1.5 text-xs text-text-muted hover:text-text-main hover:bg-bg-hover"
+                onClick={() => { closeMenu(); OpenFolder(session.cwd) }}
+              >
+                Open Working Folder
+              </button>
+            )}
+            {session.filePath && (
+              <button
+                className="w-full text-left px-3 py-1.5 text-xs text-text-muted hover:text-text-main hover:bg-bg-hover"
+                onClick={() => { closeMenu(); OpenFileLocation(session.filePath) }}
+              >
+                Open Log File Location
+              </button>
+            )}
             <button
               className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-bg-hover"
               onClick={() => {
@@ -124,17 +151,18 @@ export function SessionCard({ session, isSelected, onOpen }: Props) {
                   return
                 }
                 closeMenu()
-                DeleteSession(session.id)
+                DeleteSession(session.id).catch(err => console.error('delete failed:', err))
               }}
             >
               {confirmDelete ? 'Click again to confirm' : 'Delete Conversation'}
             </button>
           </div>
-        </>
       )}
     </div>
   )
 }
+
+
 
 function getBadgeInfo(session: Session): { label: string; className: string } {
   const type = (session.agentType || session.title || '').toLowerCase()

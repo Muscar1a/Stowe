@@ -214,11 +214,20 @@ func (r *Registry) DeleteSession(id string) error {
 	delete(r.cache, id)
 	r.mu.Unlock()
 
+	// Get file path before deleting the DB row.
+	// Fall back to DB query if the session wasn't in cache yet (e.g. initial scan still running).
+	filePath := ""
+	if ok {
+		filePath = s.FilePath
+	} else {
+		r.db.QueryRow(`SELECT file_path FROM sessions WHERE id = ?`, id).Scan(&filePath)
+	}
+
 	if err := r.db.DeleteSession(id); err != nil {
 		return err
 	}
-	if ok && s.FilePath != "" {
-		if err := os.Remove(s.FilePath); err != nil && !os.IsNotExist(err) {
+	if filePath != "" {
+		if err := os.Remove(filePath); err != nil && !os.IsNotExist(err) {
 			return err
 		}
 	}

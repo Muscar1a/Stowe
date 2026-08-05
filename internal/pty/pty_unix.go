@@ -4,6 +4,7 @@ package pty
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 
@@ -46,4 +47,12 @@ func (p *platformPTY) Close() error {
 	return p.ptmx.Close()
 }
 
-func (p *platformPTY) cmd() *exec.Cmd { return p.process }
+func (p *platformPTY) wait() int {
+	if err := p.process.Wait(); err != nil {
+		var e *exec.ExitError
+		if errors.As(err, &e) {
+			return e.ExitCode()
+		}
+	}
+	return 0
+}
