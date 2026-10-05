@@ -173,6 +173,19 @@ func (a *App) DeleteSession(sessionID string) error {
 	return nil
 }
 
+func (a *App) SelectProjectFolder() (string, error) {
+	if a.ctx == nil {
+		return "", nil
+	}
+	dir, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Open Project Folder",
+	})
+	if err != nil || dir == "" {
+		return "", err
+	}
+	return dir, nil
+}
+
 func (a *App) OpenFolder(path string) error {
 	return exec.Command("explorer", path).Start()
 }

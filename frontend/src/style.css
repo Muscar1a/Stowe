@@ -3,29 +3,27 @@
 @import "tailwindcss";
 
 :root {
-  /* Chalk — 5 light stops, amber accent, terminal stays dark */
-  --bg-tabbar:   oklch(91%  0.008 75);   /* chrome / title bar */
-  --bg-sidebar:  oklch(96%  0.006 80);   /* sidebar panel */
-  --bg-main:     oklch(99%  0.003 85);   /* content area */
-  --bg-terminal: oklch(12%  0.015 280);  /* terminal — always dark */
-  --bg-raised:   oklch(100% 0     0);    /* cards / inputs */
-  --bg-hover:    oklch(95%  0.007 80);   /* hover state */
-  --bg-active:   oklch(92%  0.008 75);   /* active / selected */
+  /* Claude-inspired Light — warm alabaster paper, terracotta accent */
+  --bg-tabbar:   oklch(94% 0.01 70);
+  --bg-sidebar:  oklch(96% 0.01 70);
+  --bg-main:     oklch(98% 0.01 70);
+  --bg-terminal: oklch(12% 0.01 70); /* Dark brown-grey terminal */
+  --bg-raised:   oklch(99% 0.005 70);
+  --bg-hover:    oklch(95% 0.015 70);
+  --bg-active:   oklch(92% 0.015 70);
 
-  /* Text */
-  --text-main:  oklch(12%  0.015 280);
-  --text-muted: oklch(46%  0.02  280);
-  --text-faint: oklch(65%  0.012 280);
+  --text-main:   oklch(25% 0.01 70);
+  --text-muted:  oklch(50% 0.01 70);
+  --text-faint:  oklch(70% 0.01 70);
 
-  /* Accent — amber/gold */
-  --accent-color:  oklch(68%  0.18  55);
-  --accent-bg:     oklch(68%  0.18  55 / 0.1);
-  --accent-muted:  oklch(68%  0.18  55 / 0.5);
+  /* Terracotta / Warm orange accent */
+  --accent-color: oklch(65% 0.14 45);
+  --accent-bg:    oklch(65% 0.14 45 / 0.12);
+  --accent-muted: oklch(65% 0.14 45 / 0.5);
 
-  /* Structure */
-  --border-color: oklch(87%  0.008 280);
-
-  --win-close: oklch(56%  0.22  25);
+  --border-color: oklch(88% 0.01 70);
+  
+  --win-close: oklch(56% 0.22 25);
 }
 
 @theme {
@@ -83,6 +81,35 @@ html, body, #root {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-color);
   opacity: 0.5;
+}
+
+
+/* ── Welcome page — dark stage + floating panel ─────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s var(--ease-out, cubic-bezier(0.16,1,0.3,1)) both;
+}
+
+.welcome-deep {
+  background: oklch(8% 0.012 255);
+}
+
+/* ponytail: scoped CSS var override so Tailwind token classes (text-text-main, bg-bg-raised etc.)
+   cascade correctly inside the dark floating panel without touching global tokens. */
+.welcome-float {
+  --text-main:    oklch(91%  0.007 84);
+  --text-muted:   oklch(64%  0.010 84);
+  --text-faint:   oklch(44%  0.012 258);
+  --bg-raised:    oklch(17%  0.016 258);
+  --bg-hover:     oklch(21%  0.018 258);
+  --bg-active:    oklch(25%  0.020 258);
+  --border-color: oklch(27%  0.014 258);
+  --accent-bg:    oklch(68%  0.18  55 / 0.12);
+  background: oklch(14% 0.015 258);
 }
 
 /* Custom xterm styling overrides for modern terminal UI */

@@ -21,15 +21,11 @@ Workbench: custom title bar → sidebar (nav + session list) → main area
   thin mono metadata bar, full-bleed xterm.
 - **Placeholders** (upcoming features): centered icon tile + two lines of text.
 
-## Theme — a token contract, not a palette
+## Theme — a single locked token contract
 
-Stowe ships **6 runtime themes** switched via `data-theme` on `<html>`
-(`stowe-dark`, `catppuccin-mocha`, `dracula`, `tokyo-night`, `nord`,
-`github-dark`). The design system therefore locks the **semantic token layer**;
-each theme supplies its own values in `frontend/src/style.css`. Components must
-reference tokens only — a raw hex/rgba in a component is a bug.
+Stowe ships a **single locked light theme** with a dark terminal contrast (Hallmark Atelier-style). The design system therefore locks the **semantic token layer** directly in the `:root` of `frontend/src/style.css`. Components must reference tokens only — a raw hex/rgba in a component is a bug.
 
-Per-theme tokens (overridden by each `[data-theme]` block):
+Universal tokens:
 
 | Token | Role |
 | --- | --- |
@@ -43,8 +39,7 @@ Per-theme tokens (overridden by each `[data-theme]` block):
 | `--text-main` | primary text |
 | `--text-muted` | secondary text |
 
-Universal tokens (declared once — all 6 themes are dark, so white-alpha
-overlays and faint text hold everywhere):
+Other universal tokens (white-alpha overlays and faint text hold everywhere where dark background is used, e.g., the terminal, while the app surface is light):
 
 | Token | Value | Role |
 | --- | --- | --- |
@@ -121,6 +116,4 @@ Inline SVG only, `currentColor`, 1.3px stroke, from
 
 ## Exports
 
-Source of truth is `frontend/src/style.css` — the `:root` / `[data-theme]`
-blocks plus the Tailwind v4 `@theme` mapping. No separate `tokens.css`; the
-entry stylesheet already is the token file for this project.
+Source of truth is `frontend/src/style.css` — the `:root` block plus the Tailwind v4 `@theme` mapping. No separate `tokens.css`; the entry stylesheet already is the token file for this project.

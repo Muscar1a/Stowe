@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { WindowMinimise, WindowToggleMaximise, Quit } from '../../wailsjs/runtime/runtime'
+import { SelectProjectFolder } from '../../wailsjs/go/main/App'
 import type { CSSProperties } from 'react'
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
   canGoForward: boolean
   onGoBack: () => void
   onGoForward: () => void
+  onSelectRepo?: (gitRoot: string | null) => void
 }
 
 // Wails frameless window: elements with --wails-draggable:drag act as the
@@ -16,7 +18,7 @@ interface Props {
 const drag = { '--wails-draggable': 'drag' } as CSSProperties
 const noDrag = { '--wails-draggable': 'no-drag' } as CSSProperties
 
-export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoForward, onGoBack, onGoForward }: Props) {
+export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoForward, onGoBack, onGoForward, onSelectRepo }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -25,7 +27,7 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
       style={drag}
     >
       {/* Left: app menu + sidebar toggle + navigation */}
-      <div className="flex items-center gap-1 px-2" style={noDrag}>
+      <div className="flex items-center gap-0.5 px-2" style={noDrag}>
         <button
           onClick={() => setMenuOpen(open => !open)}
           className={`w-7 h-7 flex items-center justify-center rounded-control transition-colors ${
@@ -88,15 +90,41 @@ export function TitleBar({ sidebarCollapsed, onToggleSidebar, canGoBack, canGoFo
         </button>
       </div>
 
-      {/* Dropdown menu (placeholder) */}
+      {/* Dropdown menu */}
       {menuOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+          <div className="fixed inset-0 z-40" style={noDrag} onClick={() => setMenuOpen(false)} />
           <div
-            className="absolute left-2 top-full mt-1 z-50 w-48 rounded-card border border-border-subtle bg-bg-tabbar shadow-xl py-1"
+            className="absolute left-2 top-full mt-1 z-50 w-48 rounded-card border border-border-subtle bg-bg-raised shadow-2xl py-1 flex flex-col"
             style={noDrag}
           >
-            <p className="px-3 py-2 text-xs text-text-faint">Nothing here yet</p>
+            <button 
+              className="w-full text-left px-3 py-1.5 text-xs text-text-main hover:bg-bg-hover transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                setMenuOpen(false)
+                // TODO: Implement Create Project
+              }}
+            >
+              Create Project
+            </button>
+            <button 
+              className="w-full text-left px-3 py-1.5 text-xs text-text-main hover:bg-bg-hover transition-colors"
+              onClick={async (e) => {
+                e.stopPropagation()
+                setMenuOpen(false)
+                try {
+                  const dir = await SelectProjectFolder()
+                  if (dir && onSelectRepo) {
+                    onSelectRepo(dir)
+                  }
+                } catch (err) {
+                  console.error('Failed to open folder:', err)
+                }
+              }}
+            >
+              Open Project...
+            </button>
           </div>
         </>
       )}

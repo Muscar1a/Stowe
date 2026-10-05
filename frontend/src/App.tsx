@@ -29,7 +29,8 @@ export default function App() {
   const { repoGroups, sessions, searchQuery, setSearchQuery } = useSessions()
   const [tabs, setTabs] = useState<TabEntry[]>([])
   const [activeTabPtyId, setActiveTabPtyId] = useState<string | null>(null)
-  const [showHome, setShowHome] = useState(false)
+  const [showHome, setShowHome] = useState(true)
+  const [activeRepoRoot, setActiveRepoRoot] = useState<string | null>(null)
   const [appMode, setAppMode] = useState<AppMode>('code')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -69,8 +70,19 @@ export default function App() {
     setError(null)
   }
 
+  function handleSelectRepo(gitRoot: string | null) {
+    setActiveRepoRoot(gitRoot)
+  }
+
+  function handleOpenHub() {
+    setShowHome(true)
+  }
+
   async function handleSelectSession(session: Session) {
     setAppMode('code')
+    if (session.gitRoot) {
+      setActiveRepoRoot(session.gitRoot)
+    }
     // Already open — just focus its tab
     const existing = tabs.find(t => t.sessionID === session.id)
     if (existing) {
@@ -86,10 +98,13 @@ export default function App() {
     }
   }
 
-  async function handleNewChat() {
+  async function handleNewChat(targetGitRoot?: string) {
     setAppMode('code')
     try {
-      const gitRoot = activeSession?.gitRoot ?? ''
+      const gitRoot = targetGitRoot ?? activeSession?.gitRoot ?? activeRepoRoot ?? ''
+      if (gitRoot) {
+        setActiveRepoRoot(gitRoot)
+      }
       const ptyID = await LaunchNewChat(gitRoot)
       openTab({ ptyID, sessionID: null, title: 'New chat' })
     } catch (err) {
@@ -161,6 +176,7 @@ export default function App() {
         canGoForward={canGoForward}
         onGoBack={handleGoBack}
         onGoForward={handleGoForward}
+        onSelectRepo={handleSelectRepo}
       />
       {error && (
         <div className="shrink-0 bg-red-900/60 border-b border-red-700/50 px-4 py-2 text-xs text-red-300 flex items-center justify-between">
@@ -181,6 +197,9 @@ export default function App() {
           onNewChat={handleNewChat}
           mode={appMode}
           onSelectMode={handleSelectMode}
+          activeRepoRoot={activeRepoRoot}
+          onSelectRepo={handleSelectRepo}
+          onOpenHub={handleOpenHub}
         />
       </div>
       {appMode === 'chat' && <ApiChatPlaceholder />}
@@ -189,12 +208,16 @@ export default function App() {
         <SessionDetail
           session={activeSession}
           repoGroups={repoGroups}
+          sessions={sessions}
           tabs={tabs}
           activeTabPtyId={activeTabPtyId}
           showHome={showHome}
           onSelectTab={handleSelectTab}
           onCloseTab={handleCloseTab}
           onNewChat={handleNewChat}
+          onSelectRepo={handleSelectRepo}
+          onOpenSession={handleSelectSession}
+          onOpenHome={handleOpenHub}
         />
       </div>
       </div>

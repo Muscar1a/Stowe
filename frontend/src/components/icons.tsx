@@ -134,3 +134,62 @@ export function SparkIcon(p: IconProps) {
     </Icon>
   )
 }
+
+export function HomeIcon(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <path d="M2.5 7L8 2.5 13.5 7v6.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V7Z" />
+      <path d="M6 14V9h4v5" />
+    </Icon>
+  )
+}
+
+export function CodeIcon(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <path d="m5 11-4-3 4-3M11 5l4 3-4 3M9 3 7 13" />
+    </Icon>
+  )
+}
+
+export function BoxIcon(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <path d="M2 5.5l6-3 6 3v5l-6 3-6-3v-5z" />
+      <path d="M2 5.5l6 3 6-3M8 8.5v6" />
+    </Icon>
+  )
+}
+
+export function WandIcon(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <path d="M12 2l2 2-8.5 8.5a1.4 1.4 0 0 1-2-2L12 2zM5.5 3.5h.01M3 6h.01M13 10h.01" />
+    </Icon>
+  )
+}
+
+export function MicIcon(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <rect x="5.5" y="2" width="5" height="8" rx="2.5" />
+      <path d="M2.5 8v1a5.5 5.5 0 0 0 11 0V8M8 14.5v-1" />
+    </Icon>
+  )
+}
+
+export function HeatmapSquare({ color = 'currentColor', ...p }: IconProps & { color?: string }) {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill={color} stroke="none" {...p}>
+      <rect width="12" height="12" rx="2" />
+    </svg>
+  )
+}
+
+export function PixelCrab(p: SVGProps<SVGSVGElement> & { size?: number }) {
+  return (
+    <svg width={p.size || 24} height={p.size || 24} viewBox="0 0 16 16" fill="currentColor" {...p}>
+      <path d="M4 3h2v2H4zm6 0h2v2h-2zM3 5h10v2H3zm-1 2h12v4H2zm2 4h2v2H4zm6 0h2v2h-2zm-9-2h1v2H2zm11 0h1v2h-1z" />
+    </svg>
+  )
+}

@@ -26,43 +26,30 @@ export interface Theme {
   brightWhite?: string
 }
 
-export const TOKYO_NIGHT: Theme = {
-  id: 'tokyo-night',
-  name: 'Tokyo Night Storm',
-  terminalBg: '#1a1b26',
-  terminalFg: '#c0caf5',
-  terminalCursor: '#7aa2f7',
-  terminalCursorAccent: '#15161e',
-  terminalSelection: 'rgba(51, 70, 122, 0.5)',
-  black: '#15161e',
-  red: '#f7768e',
-  green: '#9ece6a',
-  yellow: '#e0af68',
-  blue: '#7aa2f7',
-  magenta: '#bb9af7',
-  cyan: '#7dcfff',
-  white: '#a9b1d6',
-  brightBlack: '#414868',
-  brightRed: '#ff899e',
-  brightGreen: '#b9f27c',
-  brightYellow: '#ffc777',
-  brightBlue: '#89b4fa',
-  brightMagenta: '#c099ff',
-  brightCyan: '#89ddff',
-  brightWhite: '#c0caf5',
+export const DEFAULT_THEME: Theme = {
+  id: 'stowe-light',
+  name: 'Stowe Light',
+  terminalBg: '#1F1E1D',
+  terminalFg: '#e4e4ed',
+  terminalCursor: '#D97757',
+  terminalCursorAccent: '#1F1E1D',
+  terminalSelection: 'rgba(55, 60, 90, 0.45)',
+  black: '#1a1a1f', red: '#e06c75', green: '#7ec780', yellow: '#c49a35',
+  blue: '#6ba8e0', magenta: '#c678dd', cyan: '#56b6c2', white: '#b8b8c6',
+  brightBlack: '#3a3a48', brightRed: '#f08090', brightGreen: '#98e09a',
+  brightYellow: '#d4b04a', brightBlue: '#80c0f0', brightMagenta: '#d688ed',
+  brightCyan: '#76c6d2', brightWhite: '#e4e4ed',
 }
 
 interface ThemeContextType {
   activeTheme: Theme
 }
 
-const ThemeContext = createContext<ThemeContextType>({
-  activeTheme: TOKYO_NIGHT,
-})
+const ThemeContext = createContext<ThemeContextType>({ activeTheme: DEFAULT_THEME })
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   return (
-    <ThemeContext.Provider value={{ activeTheme: TOKYO_NIGHT }}>
+    <ThemeContext.Provider value={{ activeTheme: DEFAULT_THEME }}>
       {children}
     </ThemeContext.Provider>
   )
